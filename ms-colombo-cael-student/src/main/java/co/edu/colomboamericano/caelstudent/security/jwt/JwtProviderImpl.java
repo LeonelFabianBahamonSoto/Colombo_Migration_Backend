@@ -11,6 +11,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
+import co.edu.colomboamericano.caelstudent.dto.AuthenticationTokenDTO;
 import co.edu.colomboamericano.caelstudent.security.UserPrincipal;
 import co.edu.colomboamericano.caelstudent.service.utils.SecurityUtils;
 
@@ -34,18 +35,22 @@ public class JwtProviderImpl implements JwtProvider{
 
     //crear token
     @Override
-    public String generateToken(UserPrincipal auth){
+    public AuthenticationTokenDTO generateToken(UserPrincipal auth){
+    	AuthenticationTokenDTO authenticationTokenDTO = new AuthenticationTokenDTO();
         String authorities = auth.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.joining(","));
         Key key = Keys.hmacShaKeyFor(JWT_SECRET.getBytes(StandardCharsets.UTF_8));
-        return Jwts.builder()
+        
+        authenticationTokenDTO.setAccessToken(Jwts.builder()
                 .setSubject(auth.getUsername())
                 .claim("roles",authorities)
                 .claim("userId",auth.getId())
                 .setExpiration(new Date(System.currentTimeMillis()+JWT_EXPIRATION_IN_MS))
                 .signWith(key, SignatureAlgorithm.HS512)
-                .compact();
+                .compact());
+        authenticationTokenDTO.setExpiresIn(new Date(System.currentTimeMillis()+JWT_EXPIRATION_IN_MS));
+        return authenticationTokenDTO;
     }
 
     @Override
