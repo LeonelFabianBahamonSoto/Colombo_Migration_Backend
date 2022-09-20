@@ -1,0 +1,6 @@
+Manifest-Version: 1.0
+Build-Jdk-Spec: 17
+Implementation-Title: ms-admin-registry-server
+Implementation-Version: 0.0.1
+Created-By: Maven Integration for Eclipse
+

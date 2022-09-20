@@ -1,0 +1,38 @@
+server:
+  port: 8082
+  
+# JWT configuration
+app:
+  jwt:
+    secret: RandomSecretKey123456789!RandomSecretKey123456789!RandomSecretKey123456789!
+    expiration-in-ms: 86400000
+    
+# MySql #
+spring:
+  datasource:
+    url: jdbc:mysql://127.0.0.1:3306/paginaweb
+    username: root
+    password: 2812378
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+# Registry Client
+
+eureka:
+   client:
+      fetch-registry: true
+      serviceUrl:
+         defaultZone: http://localhost:8889/eureka
+
+#Metrics related configurations
+management:
+  endpoint:
+    metrics:
+      enabled: true
+    prometheus:
+      enabled: true
+    gateway:
+      enabled: true   
+  endpoints:
+      web:
+        exposure:
+          include: "*"

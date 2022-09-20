@@ -1,0 +1,48 @@
+server:
+  port: 8887    
+
+# Registry Client
+eureka:
+   client:
+      fetch-registry: true
+      serviceUrl:
+         defaultZone: http://localhost:8889/eureka
+   
+# Matricula de Microservicios
+spring:
+  main:
+    web-application-type: reactive
+  datasource:
+    url: jdbc:mysql://127.0.0.1:3306/paginaweb
+    username: root
+    password: 2812378
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  cloud:
+    gateway:
+      discovery.locator:           
+          enabled: true
+          lowerCaseServiceId: true
+      routes:
+#      - id: id-ms-colombo-facturacion
+#        uri: lb://MS-COLOMBO-FACTURACION
+#        predicates:
+#        - Path=/ms-productos/**
+#        filters:
+#        - RewritePath=/ms-productos/(?<path>.*), /$\{path}
+        
+#      - id: albums
+#        uri: https://jsonplaceholder.typicode.com/albums
+#        predicates:
+#        - Path=/albums
+
+# Activacion de endpoints
+management:
+     endpoints:
+       web:
+         exposure:
+           include: '*'
+     endpoint:
+       gateway:
+          enabled: true
+       health:
+         show-details: always
