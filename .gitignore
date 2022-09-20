@@ -1,0 +1,10 @@
+.metadata
+ms-admin-api-gateway-server/.settings
+*.
+.classpath
+*.
+*.
+.project
+ms-admin-config-server/.settings
+*.prefs
+.factorypath
