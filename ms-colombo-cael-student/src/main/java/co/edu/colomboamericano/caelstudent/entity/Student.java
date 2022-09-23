@@ -44,6 +44,11 @@ public class Student
 	@Column(name = "password", length = 500)
 	private String password;
 	
+	@Size( min= 1, max=50, message = "El email del usuario debe tener entre 1 a 50 caracteres")
+	@NotNull(message = "El email del usuario no puede ser nulo")
+	@Column(name = "email", length = 50)
+	private String email;
+	
 //	@Enumerated(EnumType.ORDINAL)
 	@Column(name="politica_privacidad")
 	private String privacyPolicy;

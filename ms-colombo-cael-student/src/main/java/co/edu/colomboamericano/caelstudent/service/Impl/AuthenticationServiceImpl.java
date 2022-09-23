@@ -6,6 +6,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
+import co.edu.colomboamericano.caelstudent.dto.AuthenticationTokenDTO;
 import co.edu.colomboamericano.caelstudent.entity.Student;
 import co.edu.colomboamericano.caelstudent.security.UserPrincipal;
 import co.edu.colomboamericano.caelstudent.security.jwt.JwtProvider;
@@ -21,16 +22,13 @@ public class AuthenticationServiceImpl implements AuthenticationService
     private JwtProvider jwtProvider;
 
     @Override
-    public Student signInAndReturnJWT(Student signInRequest){
-    	System.out.println(signInRequest);
+    public AuthenticationTokenDTO signInAndReturnJWT(Student signInRequest){
+    	AuthenticationTokenDTO authenticationTokenDTO = new AuthenticationTokenDTO();
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(signInRequest.getDocumentNumber(),signInRequest.getPassword())
         );
         UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
-        String jwt = jwtProvider.generateToken(userPrincipal);
-
-        Student sigInUser = userPrincipal.getStudent();
-        sigInUser.setToken(jwt);
-        return sigInUser;
+        authenticationTokenDTO = jwtProvider.generateToken(userPrincipal);   
+        return authenticationTokenDTO;
     }
 }

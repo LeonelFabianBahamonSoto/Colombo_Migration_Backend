@@ -1,9 +1,14 @@
 package co.edu.colomboamericano.caelstudent.security.jwt;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.security.Keys;
+import java.nio.charset.StandardCharsets;
+import java.security.Key;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import javax.servlet.http.HttpServletRequest;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -11,16 +16,13 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
+import co.edu.colomboamericano.caelstudent.dto.AuthenticationTokenDTO;
 import co.edu.colomboamericano.caelstudent.security.UserPrincipal;
 import co.edu.colomboamericano.caelstudent.service.utils.SecurityUtils;
-
-import javax.servlet.http.HttpServletRequest;
-import java.nio.charset.StandardCharsets;
-import java.security.Key;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.Set;
-import java.util.stream.Collectors;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
 
 @Component
 public class JwtProviderImpl implements JwtProvider{
@@ -34,18 +36,22 @@ public class JwtProviderImpl implements JwtProvider{
 
     //crear token
     @Override
-    public String generateToken(UserPrincipal auth){
+    public AuthenticationTokenDTO generateToken(UserPrincipal auth){
+    	AuthenticationTokenDTO authenticationTokenDTO = new AuthenticationTokenDTO();
         String authorities = auth.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.joining(","));
         Key key = Keys.hmacShaKeyFor(JWT_SECRET.getBytes(StandardCharsets.UTF_8));
-        return Jwts.builder()
+        
+        authenticationTokenDTO.setAccessToken(Jwts.builder()
                 .setSubject(auth.getUsername())
                 .claim("roles",authorities)
                 .claim("userId",auth.getId())
                 .setExpiration(new Date(System.currentTimeMillis()+JWT_EXPIRATION_IN_MS))
                 .signWith(key, SignatureAlgorithm.HS512)
-                .compact();
+                .compact());
+        authenticationTokenDTO.setExpiresIn(new Date(System.currentTimeMillis()+JWT_EXPIRATION_IN_MS));
+        return authenticationTokenDTO;
     }
 
     @Override
