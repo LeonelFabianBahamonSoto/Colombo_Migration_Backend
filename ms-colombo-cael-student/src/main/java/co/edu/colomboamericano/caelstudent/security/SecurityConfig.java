@@ -45,7 +45,7 @@ public class SecurityConfig
 
         httpSecurity.csrf().disable().cors().disable()
                 .authorizeHttpRequests()
-                .antMatchers("/api/authentication/sign-in","/api/authentication/sign-up").permitAll().antMatchers("/v1/student/**").authenticated()
+                .antMatchers("/api/authentication/sign-in","/api/authentication/sign-up").permitAll().antMatchers("/v1/student/**").permitAll()
                 .and()
                 .authenticationManager(authenticationManager)
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
