@@ -1,16 +1,1 @@
-.metadata
-ms-admin-api-gateway-server/.settings
-*.
-.classpath
-*.
-*.
-.project
-ms-admin-config-server/.settings
-*.prefs
-*.class
-.factorypath
-ms-colombo-cael-student/target/*
-ms-colombo-cael-student/bin/*
-ms-admin-api-gateway-server/target/*
-ms-admin-config-server/target/*
-ms-admin-registry-server/target/*
+

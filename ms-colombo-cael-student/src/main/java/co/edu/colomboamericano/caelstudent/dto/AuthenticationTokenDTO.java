@@ -8,5 +8,3 @@ import lombok.Data;
 public class AuthenticationTokenDTO {
 	private String accessToken;
 	private Date expiresIn;
-
-}

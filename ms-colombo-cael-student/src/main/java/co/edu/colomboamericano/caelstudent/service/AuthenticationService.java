@@ -6,4 +6,6 @@ import co.edu.colomboamericano.caelstudent.entity.Student;
 public interface AuthenticationService
 {
 	AuthenticationTokenDTO signInAndReturnJWT(Student signInRequest);
+  
+	Object signInAndReturnJWT(Student signInRequest);
 }

@@ -58,7 +58,8 @@ public class StudentServiceImp implements StudentService
 	@Transactional( readOnly = false, propagation = Propagation.REQUIRED, rollbackFor = Exception.class )
 	public Student save(Student entity) throws Exception
 	{
-		entity.setPassword( passwordEncoder.encode( entity.getPassword() ) );
+		entity.setPassword( passwordEncoder.encode( entity.getPassword()));
+		entity.setCheck_new_password("true");
 		return studentRepository.save( entity );
 	}
 
@@ -79,5 +80,17 @@ public class StudentServiceImp implements StudentService
 	@Transactional( readOnly = false, propagation = Propagation.REQUIRED, rollbackFor = Exception.class )
 	public void deleteById(Integer id) throws Exception {
 		studentRepository.deleteById(id);
+	}
+
+	/*validar si el estudiante ya cambio la contrasena*/
+	@Override
+	public boolean validateStudentSignIn(String numberDocument, String password) {
+		
+		String resultFindStudentByPassword = null;
+		resultFindStudentByPassword = this.studentRepository.findStudentByPassword(numberDocument, password);
+		if (resultFindStudentByPassword == null || resultFindStudentByPassword.isEmpty()) {
+			return false;//no ha cambiado la password
+		}
+		return true;
 	}
 }
