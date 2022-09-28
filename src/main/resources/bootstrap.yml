@@ -1,0 +1,15 @@
+spring:
+  mail:
+    host: serviciosenlinea@colomboamericano.edu.co
+  application:
+    name: ms-colombo-cael-student
+    
+cloud:
+  aws:
+    region:
+      static: us-east-1
+    stack:
+      auto: false
+    credentials:
+      access-key: AKIAJP4QCHWX6XJQVKNA
+      secret-key: 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
