@@ -29,19 +29,24 @@ public class AuthenticationServiceImpl implements AuthenticationService
     private StudentService studentService;
 
     @Override
+    public AuthenticationTokenDTO signInAndReturnJWT(Student signInRequest){
+
     public Object signInAndReturnJWT(Student signInRequest){
        	Map<String,Object> response = new HashMap<>();
+
     	AuthenticationTokenDTO authenticationTokenDTO = new AuthenticationTokenDTO();
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(signInRequest.getDocumentNumber(),signInRequest.getPassword())
         );
     
         UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
+
         boolean resultValidateStudent = studentService.validateStudentSignIn(signInRequest.getDocumentNumber(),userPrincipal.getPassword());
         if (!resultValidateStudent) {
         	response.put("error", "El estudiante debe cambiar la contraseña");
         	return response;
 		}
+
         authenticationTokenDTO = jwtProvider.generateToken(userPrincipal);   
         return authenticationTokenDTO;
     }
