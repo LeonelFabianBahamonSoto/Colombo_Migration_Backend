@@ -26,65 +26,76 @@ import co.edu.colomboamericano.caelstudent.service.StudentService;
 public class StudentController
 {
 	@Autowired
-	private StudentService studentSertvice;
+	private StudentService studentService;
 	
 	public StudentController( StudentService studentSertvice )
 	{
-		this.studentSertvice = studentSertvice;
+		this.studentService = studentSertvice;
 	};
 	
 	@GetMapping("/findByDocument/{documentNumber}")
 	public ResponseEntity<Optional<Student>>  findByDocument(@PathVariable("documentNumber") String documentNumber) throws Exception
 	{
-		return new ResponseEntity<>( studentSertvice.findByDocument( documentNumber ), HttpStatus.OK );
+		return new ResponseEntity<>( studentService.findByDocument( documentNumber ), HttpStatus.OK );
 	}
 	
 	@GetMapping("/allstudent")
 	public ResponseEntity<List<Student>>  listar() throws Exception{
-		return new ResponseEntity<>( studentSertvice.findAll(), HttpStatus.OK);
+		return new ResponseEntity<>( studentService.findAll(), HttpStatus.OK);
 	}
 	
 	@GetMapping("/studentById/{id}")
 	public ResponseEntity<Optional<Student>> listarPorId(@PathVariable("id") Integer id) throws Exception
 	{
-		Optional<Student> obj = studentSertvice.findById(id);
+		Optional<Student> obj = studentService.findById(id);
 		return new ResponseEntity<>(obj,HttpStatus.OK);
 	}
 	
 	@PostMapping("/saveStudent")
 	public  ResponseEntity<Student> save( @Valid @RequestBody Student student )throws Exception
 	{
-		return ResponseEntity.status( HttpStatus.CREATED ).body( studentSertvice.save(student) );
+		return ResponseEntity.status( HttpStatus.CREATED ).body( studentService.save(student) );
 	}
 	
 	@PutMapping("/updateStudent")
 	public  ResponseEntity<Student> update( @Valid @RequestBody Student student )throws Exception
 	{
-		return ResponseEntity.status( HttpStatus.CREATED ).body( studentSertvice.save(student) );
+		return ResponseEntity.status( HttpStatus.OK ).body( studentService.save(student) );
 	}
 	
+    /**
+     * @author Smarthink
+     * @param String password ( contrasenia nueva), String verificationPassword (Verificacion de la 1ra contrasenia)
+     * y String resetPasswordToken(Token generado en el proceso del email).
+     * @return Retorna el estudiante con la nueva contrasenia.
+     */
 	@PutMapping("/resetPassword")
-	public  ResponseEntity<String> updateForgottenPassword( @RequestParam String password, @RequestParam String verificationPassword )throws Exception
+	public  ResponseEntity<Student> updateForgottenPassword( @RequestParam String password, @RequestParam String verificationPassword, @RequestParam String resetPasswordToken )throws Exception
 	{
-		if( password == null || verificationPassword == null || !password.equals(verificationPassword) )
-		{
+		if( password == null || verificationPassword == null || !password.equals(verificationPassword) ) {
 			throw new Exception("Las contrasenias ingresadas no coinciden");
 		};
+		
+		if( resetPasswordToken == null ) {
+			throw new Exception("El token para restablecer la contrasenia del estudiante es nulo");
+		};
+		
+		Student student = studentService.updateForgottenPassword(password, verificationPassword, resetPasswordToken);
 
-		return new ResponseEntity<>( "OK", HttpStatus.OK );
+		return ResponseEntity.status( HttpStatus.OK ).body( student );
 	}
 	
 	@DeleteMapping("/delete")
 	public ResponseEntity<?> delete( @RequestBody Student student ) throws Exception
 	{
-		studentSertvice.delete(student);
+		studentService.delete(student);
 		return ResponseEntity.ok().build();
 	}
 	
 	@DeleteMapping("/deleteById/{id}")
 	public ResponseEntity<?> deleteById( @PathVariable("id") Integer id ) throws Exception
 	{
-		studentSertvice.deleteById( id );
+		studentService.deleteById( id );
 		return ResponseEntity.ok().build();
 	}
 }

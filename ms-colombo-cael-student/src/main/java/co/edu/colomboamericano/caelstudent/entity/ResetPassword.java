@@ -20,13 +20,13 @@ import lombok.NoArgsConstructor;
 public class ResetPassword
 {
 	@Id
-	@Size( min= 1, max=100, message = "El email del usuario debe tener entre 1 a 100 caracteres")
-	@NotNull(message = "El email del usuario no puede ser nulo")
-	private String email;
-	
 	@Size( min= 1, max=255, message = "El token del usuario debe tener entre 1 a 255 caracteres")
 	@NotNull(message = "El token del usuario no puede ser nulo")
 	private String token;
+	
+	@Size( min= 1, max=100, message = "El email del usuario debe tener entre 1 a 100 caracteres")
+	@NotNull(message = "El email del usuario no puede ser nulo")
+	private String email;
 	
 	@NotNull(message = "La fecha de generacion del token no puede ser nulo")
 	private Date created_at;

@@ -11,4 +11,6 @@ import co.edu.colomboamericano.caelstudent.entity.Student;
 public interface StudentRepository extends JpaRepository<Student, Integer>
 {
 	Optional<Student> findByDocumentNumber( String documentNumber );
+	
+	Optional<Student> findByEmail( String email );
 }
