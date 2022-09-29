@@ -1,6 +1,8 @@
 package co.edu.colomboamericano.caelstudent.service.Impl;
 
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +20,7 @@ import co.edu.colomboamericano.caelstudent.security.UserPrincipal;
 import co.edu.colomboamericano.caelstudent.security.jwt.JwtProvider;
 import co.edu.colomboamericano.caelstudent.service.AuthenticationService;
 import co.edu.colomboamericano.caelstudent.service.MailService;
+import co.edu.colomboamericano.caelstudent.service.StudentService;
 
 @Service
 public class AuthenticationServiceImpl implements AuthenticationService
@@ -33,6 +36,9 @@ public class AuthenticationServiceImpl implements AuthenticationService
 	
 	@Autowired
 	MailService mailService;
+	
+	@Autowired
+    private StudentService studentService;
 
     @Autowired
     private JwtProvider jwtProvider;
@@ -40,18 +46,26 @@ public class AuthenticationServiceImpl implements AuthenticationService
     /**
      * @author Smarthink
      * @param String documentNumber, String password.
-     * @return Metodo para el inicio de sesion del estudiante.
+     * @return Metodo para el inicio de sesion del estudiante, valida si el estudiante ya cambio
+     * la contrasena.
      */
     @Override
-    public AuthenticationTokenDTO signInAndReturnJWT(Student signInRequest){
+    public Object signInAndReturnJWT(Student signInRequest){
+       	Map<String,Object> response = new HashMap<>();
     	AuthenticationTokenDTO authenticationTokenDTO = new AuthenticationTokenDTO();
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(signInRequest.getDocumentNumber(),signInRequest.getPassword())
         );
+    
         UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
+        boolean resultValidateStudent = studentService.validateStudentSignIn(signInRequest.getDocumentNumber(),userPrincipal.getPassword());
+        if (!resultValidateStudent) {
+        	response.put("error", "El estudiante debe cambiar la contraseña");
+        	return response;
+		}
         authenticationTokenDTO = jwtProvider.generateToken(userPrincipal);   
         return authenticationTokenDTO;
-    };
+    }
     
     /**
      * @author Smarthink

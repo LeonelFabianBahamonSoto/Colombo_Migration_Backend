@@ -71,8 +71,8 @@ public class Student
 	private Timestamp updatedAt;
 	
 	@Column(name = "fecha_manual_convivencia")
-	private Date handbookAcceptanceDate;
+	private Date handbookAcceptanceDate;	
 	
-	@Transient
-    private String token;
+	@Column(name = "check_new_password")
+    private String check_new_password;
 }

@@ -88,4 +88,15 @@ public class StudentServiceImp implements StudentService
 	public void deleteById(Integer id) throws Exception {
 		studentRepository.deleteById(id);
 	}
+
+	@Override
+	public boolean validateStudentSignIn(String numberDocument, String password) {
+		
+		String resultFindStudentByPassword = null;
+		resultFindStudentByPassword = this.studentRepository.findStudentByPassword(numberDocument, password);
+		if (resultFindStudentByPassword == null || resultFindStudentByPassword.isEmpty()) {
+			return false;//no ha cambiado la password
+		}
+		return true;
+	}
 }
