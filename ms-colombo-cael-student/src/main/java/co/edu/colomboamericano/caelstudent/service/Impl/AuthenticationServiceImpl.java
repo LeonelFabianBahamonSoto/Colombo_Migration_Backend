@@ -56,7 +56,8 @@ public class AuthenticationServiceImpl implements AuthenticationService
     /**
      * @author Smarthink
      * @param String documentNumber.
-     * @return Consulta el estudiante, crea el token para restablecer contrasenia y envia el correo electronico con el enlace de restablecimiento.
+     * @return Consulta el estudiante, crea el token para restablecer contrasenia, almacena el token,
+     * el email y la fecha y por ultimo envia el correo electronico con el enlace de restablecimiento.
      */
     @Override
     public String forgotPassword( String documentNumber ) throws Exception
