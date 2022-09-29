@@ -14,6 +14,7 @@ import co.edu.colomboamericano.caelstudent.entity.ResetPassword;
 import co.edu.colomboamericano.caelstudent.entity.Student;
 import co.edu.colomboamericano.caelstudent.repository.ResetPasswordRepository;
 import co.edu.colomboamericano.caelstudent.repository.StudentRepository;
+import co.edu.colomboamericano.caelstudent.security.jwt.JwtProvider;
 import co.edu.colomboamericano.caelstudent.service.StudentService;
 
 @Service
@@ -25,6 +26,9 @@ public class StudentServiceImp implements StudentService
 	
 	@Autowired
 	ResetPasswordRepository resetPasswordRepository;
+	
+    @Autowired
+    private JwtProvider jwtProvider;
 	
 	@Autowired
 	private PasswordEncoder passwordEncoder;
@@ -62,6 +66,7 @@ public class StudentServiceImp implements StudentService
 	public Student save(Student entity) throws Exception
 	{
 		entity.setPassword( passwordEncoder.encode( entity.getPassword() ) );
+		entity.setCheck_new_password("yes");
 
 		return studentRepository.save( entity );
 	}
@@ -82,7 +87,13 @@ public class StudentServiceImp implements StudentService
 	@Override
 	@Transactional( readOnly = false, propagation = Propagation.REQUIRED, rollbackFor = Exception.class )
 	public Student updateForgottenPassword( String password, String verificationPassword, String resetPasswordToken ) throws Exception
-	{				
+	{
+		Boolean isTokenValid = jwtProvider.validateAccessToken( resetPasswordToken );
+		
+		if( isTokenValid == false ) {
+			throw new Exception("El tiempo para restablecer el token ya expirto");
+		};
+		
 		Optional<ResetPassword> resetPasswordInfo = resetPasswordRepository.findByToken( resetPasswordToken );
 		
 		if( resetPasswordInfo.isEmpty() ) {
@@ -95,9 +106,8 @@ public class StudentServiceImp implements StudentService
 			throw new Exception("No se encontro el estudiante para restablecer su contrasenia");
 		};
 		
-		student.get().setPassword( resetPasswordToken );
-		System.out.println("NEW STUDENT ------------ " + student.get());
-		//ACA IRIA EL SETEO A LA COLUMNA DE VERIFY_RESET_PASSWORD CON EL YES
+		student.get().setPassword( password );
+		student.get().setCheck_new_password( "yes" );
 		
 		return this.save( student.get() );
 	}
