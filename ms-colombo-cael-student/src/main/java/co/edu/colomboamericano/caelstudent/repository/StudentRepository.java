@@ -13,7 +13,9 @@ import co.edu.colomboamericano.caelstudent.entity.Student;
 public interface StudentRepository extends JpaRepository<Student, Integer>
 {
 	Optional<Student> findByDocumentNumber( String documentNumber );
-	
+
+	Optional<Student> findByEmail( String email );
+
 	@Query(value = " select check_new_password from estudiantes where numero_documento = :numeroDocumento and password = :password", nativeQuery = true)
 	String findStudentByPassword(@Param("numeroDocumento")String numeroDocumento,@Param("password")String password);
 }

@@ -10,18 +10,21 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import co.edu.colomboamericano.caelstudent.entity.ResetPassword;
 import co.edu.colomboamericano.caelstudent.entity.Student;
+import co.edu.colomboamericano.caelstudent.repository.ResetPasswordRepository;
 import co.edu.colomboamericano.caelstudent.repository.StudentRepository;
 import co.edu.colomboamericano.caelstudent.service.StudentService;
-import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Scope("singleton")
-@Slf4j
 public class StudentServiceImp implements StudentService
 {
 	@Autowired
 	StudentRepository studentRepository;
+	
+	@Autowired
+	ResetPasswordRepository resetPasswordRepository;
 	
 	@Autowired
 	private PasswordEncoder passwordEncoder;
@@ -58,13 +61,6 @@ public class StudentServiceImp implements StudentService
 	@Transactional( readOnly = false, propagation = Propagation.REQUIRED, rollbackFor = Exception.class )
 	public Student save(Student entity) throws Exception
 	{
-//		String idForEncode = "bcrypt";
-//		
-//		Map<String,PasswordEncoder> encoders = new HashMap<>();
-//		encoders.put("sha256", new StandardPasswordEncoder());
-//		
-//		passwordEncoder = new DelegatingPasswordEncoder( idForEncode , encoders);
-
 		entity.setPassword( passwordEncoder.encode( entity.getPassword() ) );
 
 		return studentRepository.save( entity );
@@ -75,6 +71,35 @@ public class StudentServiceImp implements StudentService
 	public Student update(Student entity) throws Exception
 	{
 		return studentRepository.save( entity );
+	}
+	
+    /**
+     * @author Smarthink
+     * @param String password ( contrasenia nueva), String verificationPassword (Verificacion de la 1ra contrasenia)
+     * y String resetPasswordToken(Token generado en el proceso del email).
+     * @return Consulta la tabla password_reset 
+     */
+	@Override
+	@Transactional( readOnly = false, propagation = Propagation.REQUIRED, rollbackFor = Exception.class )
+	public Student updateForgottenPassword( String password, String verificationPassword, String resetPasswordToken ) throws Exception
+	{				
+		Optional<ResetPassword> resetPasswordInfo = resetPasswordRepository.findByToken( resetPasswordToken );
+		
+		if( resetPasswordInfo.isEmpty() ) {
+			throw new Exception("No se encontro informacion relacionada con el proceso de restablecer la contrasenia del estudiante");
+		};
+		
+		Optional<Student> student = studentRepository.findByEmail( resetPasswordInfo.get().getEmail() );
+		
+		if( student.isEmpty() ) {
+			throw new Exception("No se encontro el estudiante para restablecer su contrasenia");
+		};
+		
+		student.get().setPassword( resetPasswordToken );
+		System.out.println("NEW STUDENT ------------ " + student.get());
+		//ACA IRIA EL SETEO A LA COLUMNA DE VERIFY_RESET_PASSWORD CON EL YES
+		
+		return this.save( student.get() );
 	}
 
 	@Override
