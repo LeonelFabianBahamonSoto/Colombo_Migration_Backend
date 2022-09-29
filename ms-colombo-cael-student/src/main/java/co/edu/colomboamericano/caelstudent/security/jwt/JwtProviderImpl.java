@@ -1,9 +1,15 @@
 package co.edu.colomboamericano.caelstudent.security.jwt;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.UnsupportedJwtException;
 import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.security.SignatureException;
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -25,6 +31,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Component
+@Slf4j
 public class JwtProviderImpl implements JwtProvider{
 
     @Value("${app.jwt.secret}")
@@ -103,17 +110,56 @@ public class JwtProviderImpl implements JwtProvider{
     }
 
     @Override
-    public boolean isTokenValid(HttpServletRequest request){
-            Claims claims = extractClaims(request);
-            if (claims == null){
-                return false;
-            }
-            //si el token ya espiro a la fecha actual
-            if (claims.getExpiration().before(new Date())){
-                return false;
-            }
+    public boolean isTokenValid(HttpServletRequest request)
+    {
+		Claims claims = extractClaims(request);
+		
+		if (claims == null){
+		    return false;
+		};
+
+		//si el token ya espiro a la fecha actual
+		if (claims.getExpiration().before(new Date())){
+		    return false;
+		};
+
+		return true;
+    };
+    
+    /**
+     * @author Smarthink
+     * @param String token ( token de restablecimiento de la cotrasenia ).
+     * @return True si el token no ha expirado de lo contrario, retorna false.
+     */
+    @Override
+	public boolean validateAccessToken(String token) 
+	{
+		try {
+	        Key key = Keys.hmacShaKeyFor(JWT_SECRET.getBytes(StandardCharsets.UTF_8));
+	        
+	        @SuppressWarnings("unused")
+			Claims tokenAlreadyExpire = Jwts.parserBuilder()
+	                .setSigningKey(key)
+	                .build()
+	                .parseClaimsJws(token)
+	                .getBody();
+
             return true;
-    }
+
+        } catch (ExpiredJwtException ex) {
+        	log.warn("JWT expirado. Message: "+ ex.getMessage());
+        } catch (IllegalArgumentException ex) {
+        	log.warn("Token es null, está vacío o contiene espacios. Message: "+ ex.getMessage());
+        } catch (MalformedJwtException ex) {
+        	log.warn("JWT es inválido. Message: "+ ex);
+        } catch (UnsupportedJwtException ex) {
+        	log.warn("JWT no soportado. Message: "+ ex);
+        } catch (SignatureException ex) {
+        	log.warn("Validación de firma errónea");
+        }
+         
+        return false;
+	}
 
     //extraer todas las propiedades del token
     private Claims extractClaims(HttpServletRequest request){
@@ -128,5 +174,5 @@ public class JwtProviderImpl implements JwtProvider{
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
-    }
+    };
 }
