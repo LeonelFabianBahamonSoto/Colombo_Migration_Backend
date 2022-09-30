@@ -26,16 +26,16 @@ import co.edu.colomboamericano.caelstudent.service.StudentService;
 public class AuthenticationServiceImpl implements AuthenticationService
 {
     @Autowired
-    AuthenticationManager authenticationManager;
+    private AuthenticationManager authenticationManager;
     
 	@Autowired
-	StudentRepository studentRepository;
+	private StudentRepository studentRepository;
 	
 	@Autowired
-	ResetPasswordRepository resetPasswordRepository;
+	private ResetPasswordRepository resetPasswordRepository;
 	
 	@Autowired
-	MailService mailService;
+	private MailService mailService;
 	
 	@Autowired
     private StudentService studentService;

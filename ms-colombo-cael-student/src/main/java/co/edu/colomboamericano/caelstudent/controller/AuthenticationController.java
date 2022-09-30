@@ -29,13 +29,7 @@ public class AuthenticationController
      */
     @PostMapping("/sign-in")
     public ResponseEntity<?> signIn(@RequestBody Student student){
-    	try {
-    		  return new ResponseEntity<>( authenticationService.signInAndReturnJWT(student),HttpStatus.OK );
-		} catch (Exception e) {
-			System.out.println(e.getCause());
-			return new ResponseEntity<>(e.getMessage(),HttpStatus.INTERNAL_SERVER_ERROR);
-		}
-      
+    		  return new ResponseEntity<>( authenticationService.signInAndReturnJWT(student),HttpStatus.OK ); 
     }
 
     /**

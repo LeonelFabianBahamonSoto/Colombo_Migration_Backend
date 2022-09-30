@@ -9,8 +9,10 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 
+import co.edu.colomboamericano.caelstudent.exception.AuthException;
 import co.edu.colomboamericano.caelstudent.security.jwt.JwtAuthorizationFilter;
 
 import org.springframework.security.authentication.AuthenticationManager;
@@ -46,10 +48,17 @@ public class SecurityConfig
 
         httpSecurity.csrf().disable().cors().disable()
                 .authorizeHttpRequests()
-                .antMatchers("/api/authentication/sign-in","/api/authentication/sign-up").permitAll().antMatchers("/v1/student/**").permitAll()
+                .antMatchers("/api/authentication/sign-in","/api/authentication/sign-up").permitAll().antMatchers("/v1/student/**").authenticated()
+                .and()
+                .exceptionHandling().authenticationEntryPoint(authenticationEntryPoint())
                 .and()
                 .authenticationManager(authenticationManager)
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
         return httpSecurity.build();
+    }
+    
+    @Bean
+    public AuthenticationEntryPoint authenticationEntryPoint(){
+        return new AuthException();
     }
 }
