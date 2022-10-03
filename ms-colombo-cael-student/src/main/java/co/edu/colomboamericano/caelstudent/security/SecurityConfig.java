@@ -11,6 +11,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import co.edu.colomboamericano.caelstudent.exception.AuthException;
 import co.edu.colomboamericano.caelstudent.security.jwt.JwtAuthorizationFilter;
@@ -45,7 +46,12 @@ public class SecurityConfig
         
         auth.userDetailsService(customUserDetailsService).passwordEncoder(passwordEncoder);
         AuthenticationManager authenticationManager = auth.build();
-
+        httpSecurity.cors();
+        httpSecurity.csrf().disable();
+        httpSecurity.authenticationManager(authenticationManager);
+        httpSecurity.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+        
+        /*
         httpSecurity.csrf().disable().cors().disable()
                 .authorizeHttpRequests()
                 .antMatchers("/api/authentication/sign-in","/api/authentication/sign-up").permitAll().antMatchers("/v1/student/**").authenticated()
@@ -54,6 +60,11 @@ public class SecurityConfig
                 .and()
                 .authenticationManager(authenticationManager)
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+        return httpSecurity.build();*/
+    
+        httpSecurity.authorizeHttpRequests()
+        .antMatchers("/api/authentication/sign-in","/api/authentication/sign-up").permitAll().antMatchers("/v1/student/**").authenticated();
+        httpSecurity.addFilterBefore(jwtAuthorizationFilter(), UsernamePasswordAuthenticationFilter.class);
         return httpSecurity.build();
     }
     
