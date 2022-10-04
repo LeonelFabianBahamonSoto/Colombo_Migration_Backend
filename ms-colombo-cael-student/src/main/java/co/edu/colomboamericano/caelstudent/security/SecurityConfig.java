@@ -50,20 +50,11 @@ public class SecurityConfig
         httpSecurity.csrf().disable();
         httpSecurity.authenticationManager(authenticationManager);
         httpSecurity.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
-        
-        /*
-        httpSecurity.csrf().disable().cors().disable()
-                .authorizeHttpRequests()
-                .antMatchers("/api/authentication/sign-in","/api/authentication/sign-up").permitAll().antMatchers("/v1/student/**").authenticated()
-                .and()
-                .exceptionHandling().authenticationEntryPoint(authenticationEntryPoint())
-                .and()
-                .authenticationManager(authenticationManager)
-                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
-        return httpSecurity.build();*/
-    
+        httpSecurity.exceptionHandling().authenticationEntryPoint(authenticationEntryPoint());
         httpSecurity.authorizeHttpRequests()
         .antMatchers("/api/authentication/sign-in","/api/authentication/sign-up").permitAll().antMatchers("/v1/student/**").authenticated();
+        
+        //Add a filter to validate the tokens with every request
         httpSecurity.addFilterBefore(jwtAuthorizationFilter(), UsernamePasswordAuthenticationFilter.class);
         return httpSecurity.build();
     }
