@@ -3,20 +3,15 @@ server:
     
 # MySql #
 spring:
-  jpa:
-    hibernate:
-      naming:
-        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
-        implicit-strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyLegacyJpaImpl
-    properties:
-      hibernate:
-        physical_naming_strategy: org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy
-        globally_quoted_identifiers: true
   datasource:
     url: jdbc:mysql://127.0.0.1:13306/miniveldeingles
     username: admin
     password: gNVnKmZBD9w3ZnH
     driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
 
 # Registry Client
 

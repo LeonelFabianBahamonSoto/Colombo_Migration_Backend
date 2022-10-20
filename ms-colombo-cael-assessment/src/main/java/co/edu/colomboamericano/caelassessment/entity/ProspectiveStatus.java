@@ -18,8 +18,8 @@ import lombok.NoArgsConstructor;
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "assessmentStatus")
-public class AssessmentStatus implements Serializable
+@Table(name = "prospectiveStatus")
+public class ProspectiveStatus implements Serializable
 {
 	@Id
 	@GeneratedValue( strategy=GenerationType.IDENTITY )
