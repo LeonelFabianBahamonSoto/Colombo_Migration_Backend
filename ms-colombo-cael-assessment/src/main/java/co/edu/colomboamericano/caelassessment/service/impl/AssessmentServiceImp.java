@@ -19,8 +19,24 @@ public class AssessmentServiceImp implements AssessmentService
 	@Autowired
 	AssessmentRepository assessmentRepositrory;
 	
+	/**
+	 * @param Numero documento 'documentNumber', tipo del documento 'documentType', nivel 'level',
+	 * programa 'program', sede 'headquarter', fecha nacimiento 'birthdate'.
+	 * @return Assessment created.
+	 * @throws Exception: Si el prospective no existe.
+	 */
 	@Override
-	public Assessment save(Assessment entity) throws Exception {
+	public Assessment save(Assessment entity) throws Exception
+	{
+//		ArrayList<String> miJsonArray = new ArrayList<>();
+
+		//Consulta el prospective si no existe lanza exception (Espera a la DB)
+		// ???? es el prospective que crea un paso anterior a este EVALUAR!
+		
+		//Consulta el assessmentConfig ese cuando se crea?????
+		
+		//CREA EL ASSESSMENT CON EL PROSPECTIVE Y EL ASSESSMENTCONFIG.
+		
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -34,15 +50,21 @@ public class AssessmentServiceImp implements AssessmentService
 	@Transactional( readOnly = true )
 	public Integer getAssessmentBy( String documentNumber, String documentType ) throws Exception
 	{
-		Integer isAssessment = 0;
-		
-		isAssessment = assessmentRepositrory.findByDocumentNumberAndDocumentTypeAndAssessmentStatus(documentNumber, documentType, "1");
-		
-		if( isAssessment == 0 ) {
-			isAssessment = assessmentRepositrory.findByDocumentNumberAndDocumentTypeAndAssessmentStatus(documentNumber, documentType, "2");
-		};
-
-		return isAssessment;
+//		Integer isAssessment = 0;
+//		
+//		isAssessment = assessmentRepositrory.findByDocumentNumberAndDocumentTypeAndAssessmentStatus(documentNumber, documentType, "1");
+//		
+//		if( isAssessment == 0 ) {
+//			isAssessment = assessmentRepositrory.findByDocumentNumberAndDocumentTypeAndAssessmentStatus(documentNumber, documentType, "2");
+//		};
+//
+//		return isAssessment;
+		return 0;
+	}
+	
+	@Override
+	public Optional<Assessment> findByProspectiveId(Integer prospectiveId) {
+		return assessmentRepositrory.findByProspectiveId(prospectiveId);
 	}
 
 	@Override
@@ -53,10 +75,8 @@ public class AssessmentServiceImp implements AssessmentService
 
 	@Override
 	public Optional<Assessment> findById(Integer id) {
-		// TODO Auto-generated method stub
-		return Optional.empty();
-	}
-
+		return assessmentRepositrory.findById(id);
+	}	
 
 	@Override
 	public Assessment update(Assessment entity) throws Exception {

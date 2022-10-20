@@ -33,9 +33,19 @@ public class StudentController
 		this.studentService = studentSertvice;
 	};
 	
+	/**
+	 * 
+	 * @param documentNumber
+	 * @return student
+	 * @throws Exception: El estudiante no exista o el numero de documento sea nulo.
+	 */
 	@GetMapping("/findByDocument/{documentNumber}")
-	public ResponseEntity<Optional<Student>>  findByDocument(@PathVariable("documentNumber") String documentNumber) throws Exception
-	{
+	public ResponseEntity<Optional<Student>>  findByDocument( @PathVariable("documentNumber") String documentNumber ) throws Exception
+	{		
+		if( documentNumber == null || documentNumber.length() < 2 ) {
+			throw new Exception("El numero de documento es nulo o esta vacio.");
+		};
+		
 		return new ResponseEntity<>( studentService.findByDocument( documentNumber ), HttpStatus.OK );
 	}
 	
@@ -52,13 +62,13 @@ public class StudentController
 	}
 	
 	@PostMapping("/saveStudent")
-	public  ResponseEntity<Student> save( @Valid @RequestBody Student student )throws Exception
+	public  ResponseEntity<Student> save( @Valid @RequestBody Student student ) throws Exception
 	{
 		return ResponseEntity.status( HttpStatus.CREATED ).body( studentService.save(student) );
 	}
 	
 	@PutMapping("/updateStudent")
-	public  ResponseEntity<Student> update( @Valid @RequestBody Student student )throws Exception
+	public  ResponseEntity<Student> update( @Valid @RequestBody Student student ) throws Exception
 	{
 		return ResponseEntity.status( HttpStatus.OK ).body( studentService.save(student) );
 	}
