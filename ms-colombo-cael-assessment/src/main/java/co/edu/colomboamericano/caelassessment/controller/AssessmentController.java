@@ -1,11 +1,14 @@
 package co.edu.colomboamericano.caelassessment.controller;
 
+import java.util.Optional;
+
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -52,5 +55,42 @@ public class AssessmentController
 		};
 		
 		return ResponseEntity.status( HttpStatus.BAD_REQUEST ).body( isAssessment );
+	};
+	
+	/**
+	 * @param Numero documento 'documentNumber', tipo del documento 'documentType'
+	 * @return BadRequest para que el usuario pueda continuar de lo contrario es que ya realizo una previamente.
+	 * @throws Exception cuando el usuario ya realizo la nivelacion.
+	 */
+	@GetMapping("/getbyprospectiveid")
+	public ResponseEntity<Optional<Assessment>> getByProspectiveId( @RequestParam Integer id ) throws Exception
+	{
+		if( id == null ) {
+			throw new Exception("EL numero del prospective es nulo");
+		}
+		
+		Optional<Assessment> isAssessment = assessmentService.findByProspectiveId( id );
+		
+		if( isAssessment.isPresent() ) {
+			return ResponseEntity.status( HttpStatus.OK ).body( isAssessment );
+		};
+		
+		return ResponseEntity.status( HttpStatus.BAD_REQUEST ).body( isAssessment );
+	};
+	
+	@GetMapping("/buscarid/{id}")
+	public ResponseEntity<Optional<Assessment>> findById( @PathVariable Integer id ) throws Exception
+	{
+		if( id == null ) {
+			throw new Exception("EL numero del prospective es nulo");
+		}
+		
+//		Optional<Assessment> isAssessment = assessmentService.findById( id );
+		
+//		if( isAssessment.isPresent() ) {
+//			return ResponseEntity.status( HttpStatus.OK ).body( isAssessment );
+//		};
+		
+		return ResponseEntity.status( HttpStatus.BAD_REQUEST ).body( assessmentService.findById( id ) );
 	};
 }
