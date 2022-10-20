@@ -1,5 +1,6 @@
 package co.edu.colomboamericano.caelassessment.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -17,4 +18,7 @@ public interface AssessmentRepository extends JpaRepository<Assessment, Integer>
 
 	@Query(value = "SELECT assessmentStatusId FROM assessment WHERE prospectiveId  = :prospectiveId", nativeQuery = true)
 	Optional<Assessment> findByProspectiveId( Integer prospectiveId );
+	
+	@Query(value = "SELECT * FROM miniveldeingles.assessment limit 10", nativeQuery = true)
+	List<Assessment> findAllAssessment();
 }

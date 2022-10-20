@@ -7,6 +7,8 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
@@ -48,7 +50,7 @@ public class Prospective
 	
 	@Size( min= 1, max=500, message = "El numero de documento del estudiante debe tener entre 1 a 255 caracteres")
 	@NotNull(message = "El numero de documento del estudiante no puede ser nulo")
-	private Integer documentNumber;
+	private Long documentNumber;
 	
 	private Date birthdate;
 	
@@ -65,12 +67,13 @@ public class Prospective
 	
 	private Boolean termsConditions;
 	
-//	@OneToMany( fetch = FetchType.LAZY )
-	private String personsInCharge;
+    @ManyToOne(optional=false)
+    @JoinColumn(name="prospectiveStatusId", nullable=false)
+	private ProspectiveStatus prospectiveStatus;
 	
-//	@ManyToOne( fetch = FetchType.LAZY )
-	private String prospectiveStatus;
+	@NotNull(message = "El createAt no puede ser nulo")
+	private Date createdAt;
 	
-//	@OneToMany( fetch = FetchType.LAZY )
-//	private Assessment assessments;
+	@NotNull(message = "El updateAt no puede ser nulo")
+	private Date updatedAt;
 }

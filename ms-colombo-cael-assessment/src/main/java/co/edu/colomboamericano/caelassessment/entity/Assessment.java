@@ -48,11 +48,11 @@ public class Assessment
 
 	
 	@NotNull(message = "El createAt no puede ser nulo")
-    @Column(name = "createAt")
+    @Column(name = "createdAt")
 	private Date createAt;
 	
 	@NotNull(message = "El updateAt no puede ser nulo")
-    @Column(name = "updateAt")
+    @Column(name = "updatedAt")
 	private Date updateAt;
 	
 	@NotNull(message = "El program no puede ser nulo")

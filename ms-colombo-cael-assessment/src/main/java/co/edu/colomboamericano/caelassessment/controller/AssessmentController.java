@@ -1,5 +1,6 @@
 package co.edu.colomboamericano.caelassessment.controller;
 
+import java.util.List;
 import java.util.Optional;
 
 import javax.validation.Valid;
@@ -92,5 +93,12 @@ public class AssessmentController
 //		};
 		
 		return ResponseEntity.status( HttpStatus.BAD_REQUEST ).body( assessmentService.findById( id ) );
+	};
+	
+	@GetMapping("/todos")
+	public ResponseEntity<List<Assessment>> findAll() throws Exception
+	{		
+		System.out.println("LLEGO!");
+		return ResponseEntity.status( HttpStatus.BAD_REQUEST ).body( assessmentService.findAll() );
 	};
 }

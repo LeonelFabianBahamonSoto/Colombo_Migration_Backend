@@ -69,8 +69,7 @@ public class AssessmentServiceImp implements AssessmentService
 
 	@Override
 	public List<Assessment> findAll() {
-		// TODO Auto-generated method stub
-		return null;
+		return assessmentRepositrory.findAllAssessment();
 	}
 
 	@Override
