@@ -67,10 +67,10 @@ public class AssessmentServiceImp implements AssessmentService
 		return assessmentRepositrory.findByProspectiveId(prospectiveId);
 	}
 
-	@Override
-	public List<Assessment> findAll() {
-		return assessmentRepositrory.findAllAssessment();
-	}
+//	@Override
+//	public List<Assessment> findAll() {
+//		return assessmentRepositrory.findAllAssessment();
+//	}
 
 	@Override
 	public Optional<Assessment> findById(Integer id) {
