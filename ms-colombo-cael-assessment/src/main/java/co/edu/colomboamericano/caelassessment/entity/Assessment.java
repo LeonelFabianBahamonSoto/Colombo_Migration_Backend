@@ -1,5 +1,6 @@
 package co.edu.colomboamericano.caelassessment.entity;
 
+import java.io.Serializable;
 import java.util.Date;
 
 import javax.persistence.Column;
@@ -13,6 +14,8 @@ import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -22,7 +25,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "assessment")
-public class Assessment
+public class Assessment implements Serializable
 {
 	@Id
 	@GeneratedValue( strategy=GenerationType.IDENTITY )
@@ -45,7 +48,6 @@ public class Assessment
 	@NotNull(message = "El remainingTime no puede ser nulo")
     @Column(name = "remainingTime")
 	private int remainingTime;
-
 	
 	@NotNull(message = "El createAt no puede ser nulo")
     @Column(name = "createdAt")
@@ -65,17 +67,13 @@ public class Assessment
 	
     @ManyToOne(optional=false)
     @JoinColumn(name="assessmentStatusId", nullable=false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private AssessmentStatus assessmentStatus;
     
     @ManyToOne(optional=false)
     @JoinColumn(name="prospectiveId", nullable=false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Prospective prospective;
-
-//	@NotNull(message = "El assessmentStatusId no puede ser nulo")
-//	@Column(name = "assessmentStatusId")
-//	private Integer assessmentStatusId;
-//	
-//	@NotNull(message = "El prospectiveId no puede ser nulo")
-//	@Column(name = "prospectiveId")
-//	private Integer prospectiveId;
+    
+	private static final long serialVersionUID = 1L;
 }

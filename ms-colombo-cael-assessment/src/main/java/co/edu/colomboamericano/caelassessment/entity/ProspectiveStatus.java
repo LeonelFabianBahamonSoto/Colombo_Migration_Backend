@@ -37,4 +37,6 @@ public class ProspectiveStatus implements Serializable
     
     @Column(nullable=false)
     private LocalDateTime updatedAt;
+    
+	private static final long serialVersionUID = 1L;
 }
