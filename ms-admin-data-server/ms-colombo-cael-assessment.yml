@@ -21,6 +21,10 @@ eureka:
       serviceUrl:
          defaultZone: http://localhost:8889/eureka
 
+# URL wordpress
+url:
+  Wordpress: https://paginanuevadev.colomboamericano.edu.co/wp-json/cael/
+
 #Metrics related configurations
 management:
   endpoint:

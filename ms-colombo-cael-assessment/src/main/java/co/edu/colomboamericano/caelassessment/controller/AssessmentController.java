@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import co.edu.colomboamericano.caelassessment.entity.Assessment;
 import co.edu.colomboamericano.caelassessment.service.AssessmentService;
+import co.edu.colomboamericano.caelassessment.service.WordPressService;
 
 @RestController
 @RequestMapping("/v1/assessment")
@@ -25,6 +26,9 @@ public class AssessmentController
 {
 	@Autowired
 	private AssessmentService assessmentService;
+	
+	@Autowired
+	private WordPressService wordPressService;
 	
 	/**
 	 * @param assessment
@@ -115,11 +119,15 @@ public class AssessmentController
 //	 * @return levels.
 //	 * @throws Exception
 //	 */
-//	@GetMapping("/getbyprospectiveid")
-//	public ResponseEntity<Optional<Assessment>> getAssessmentQuestionPreview( @RequestParam Integer id ) throws Exception
-//	{
-//		return ResponseEntity.status( HttpStatus.OK ).body( assessmentService.findByProspectiveId( id ) );
-//	};
+
+	//pendiente por desestructurar objeto de respuesta del wordpress
+	@GetMapping("/questionPreview")
+	public ResponseEntity<?> getAssessmentQuestionPreview(@RequestParam Integer questionGroupId,
+			@RequestParam Integer questionTypeId,@RequestParam Integer questionId) throws Exception
+	{		
+		Object result = wordPressService.getAssessmentPreview(questionGroupId, questionTypeId, questionId);
+		return new ResponseEntity<>(result,HttpStatus.OK);
+	}
 //	
 //	/**
 //	 * @param
