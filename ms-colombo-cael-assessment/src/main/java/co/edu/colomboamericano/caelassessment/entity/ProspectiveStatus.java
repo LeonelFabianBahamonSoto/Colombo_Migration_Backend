@@ -24,7 +24,7 @@ public class ProspectiveStatus implements Serializable
 	@Id
 	@GeneratedValue( strategy=GenerationType.IDENTITY )
     @Column(name = "id", nullable=false, precision=10)
-	private int id;
+	private Integer id;
 
     @Column(nullable=false, length=255)
     private String name;

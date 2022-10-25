@@ -1,7 +1,5 @@
 package co.edu.colomboamericano.caelassessment.controller;
 
-import java.util.Optional;
-
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import co.edu.colomboamericano.caelassessment.dto.ProspectiveDto;
+import co.edu.colomboamericano.caelassessment.dto.ProspectiveToSaveDto;
 import co.edu.colomboamericano.caelassessment.entity.Prospective;
 import co.edu.colomboamericano.caelassessment.service.ProspectiveService;
 import lombok.extern.slf4j.Slf4j;
@@ -26,44 +25,56 @@ public class ProspectiveController
 {
 	@Autowired
 	private ProspectiveService prospectiveService;
-	
+
 	/**
-	 * @param Prospective
-	 * @return Creacion de Prospective
-	 * @throws Exception
+	 * @author Smarthink
+	 * @param ProspectiveToSaveDto Entity
+	 * @return New Prospective
+	 * @throws Exception if the person's prospective, email are different or null or document number is already registered
 	 */
 	@PostMapping("")
-	public ResponseEntity<Prospective> createProspective( @RequestBody ProspectiveDto prospective ) throws Exception
+	public ResponseEntity<Prospective> createProspective( @Valid @RequestBody ProspectiveToSaveDto prospectiveToSave ) throws Exception
 	{
-		log.info("Prospective: " + prospective);
+		log.info("Prospective: " + prospectiveToSave);
 		
-		if( prospective == null ) {
+		if( prospectiveToSave == null ) {
 			throw new Exception("El prospective es nulo");
 		};
 		
-		if( !prospective.getEmail().equals( prospective.getConfirmEmail() ) ) {
+		if( !prospectiveToSave.getEmail().equals( prospectiveToSave.getConfirmEmail() ) ) {
 			throw new Exception("Los email ingresados no son iguales");
 		};
 		
-//		return ResponseEntity.status( HttpStatus.CREATED ).body( prospectiveService.save( prospective ) );
-		return null;
+		if( !prospectiveToSave.getTermsConditions().equals( true ) ) {
+			throw new Exception("El usuario debe aceptar los terminos y condiciones");
+		};
+		
+		return ResponseEntity.status( HttpStatus.CREATED ).body( prospectiveService.createProspective( prospectiveToSave ) );
 	};
 	
 	/**
-	 * @param
-	 * @return levels.
-	 * @throws Exception
+	 * @author Smarthink
+	 * @param Customer document number 
+	 * @return prospectiveDto from customer
+	 * @throws Exception if prospective doesnt exist
 	 */
 	@GetMapping("/getByDocumentNumber/{documentNumber}")
-	public ResponseEntity<Optional<Prospective>> getProspectiveByDocumentNumber( @PathVariable Long documentNumber ) throws Exception
+	public ResponseEntity<ProspectiveDto> getProspectiveByDocumentNumber( @PathVariable Long documentNumber ) throws Exception
 	{
 		if( documentNumber == null ) {
 			throw new Exception("El numero de documento del Prospective a buscar es nulo");
 		};
+		
+		ProspectiveDto prospective = prospectiveService.findByDocumentNumber( documentNumber );
+		
+		
+		if( prospective == null ) {
+			throw new Exception("No se encontro el prospective por el numero de documento indicado");
+		};
 
-		return ResponseEntity.status( HttpStatus.OK ).body( prospectiveService.findByDocumentNumber( documentNumber ) );
+		return ResponseEntity.status( HttpStatus.OK ).body( prospective );
 	};
-	
+
 	/**
 	 * @param
 	 * @return levels.

@@ -53,8 +53,7 @@ public class Prospective implements Serializable
 	@NotNull(message = "El segundo apellido del estudiante no puede ser nulo")
     @Column(name = "secondSurname")
     private String secondSurname;
-	
-	@Size( min= 1, max=500, message = "El numero de documento del estudiante debe tener entre 1 a 255 caracteres")
+
 	@NotNull(message = "El numero de documento del estudiante no puede ser nulo")
     @Column(name = "documentNumber")
     private Long documentNumber;
@@ -76,12 +75,12 @@ public class Prospective implements Serializable
 	@Column(name = "cellphone")
     private String cellphone;
 	
-	@NotNull(message = "El school grade no puede ser nulo")
+//	@NotNull(message = "El school grade no puede ser nulo")
 	@Column(name = "schoolGrade")
     private Integer schoolGrade;
 	
 	@Column(name = "termsConditions")
-    private short termsConditions;
+    private int termsConditions;
 	
 	@NotNull(message = "El createAt no puede ser nulo")
 	@Column(name = "createdAt")

@@ -9,59 +9,84 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import co.edu.colomboamericano.caelassessment.dto.ProspectiveDto;
+import co.edu.colomboamericano.caelassessment.dto.ProspectiveToSaveDto;
 import co.edu.colomboamericano.caelassessment.entity.Prospective;
+import co.edu.colomboamericano.caelassessment.mapper.ProspectiveMapper;
 import co.edu.colomboamericano.caelassessment.repository.ProspectiveRepository;
 import co.edu.colomboamericano.caelassessment.service.ProspectiveService;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @Scope("singleton")
 public class ProspectiveServiceImp implements ProspectiveService
 {
 	@Autowired
 	private ProspectiveRepository prospectiveRepository;
+	
+	@Autowired
+	private ProspectiveMapper prospectiveMapper;
+
 
 	/**
-	 * @author Smarthink
-	 * @param new prospective entity
-	 * @return new prospective
-	 * @throws Exception if prospective couldnt be created.
+	 * @param ProspectiveToSaveDto Entity
+	 * @return New Prospective
+	 * @throws Exception if the person's document number is already registered
 	 */
 	@Override
 	@Transactional( readOnly = false, propagation = Propagation.REQUIRED, rollbackFor = Exception.class )
-	public Prospective save( Prospective entity ) throws Exception
+	public Prospective createProspective( ProspectiveToSaveDto prospectiveToSave ) throws Exception
 	{
-		Optional<Prospective> isProspective = findByDocumentNumber( entity.getDocumentNumber() );
+		ProspectiveDto isProspective = findByDocumentNumber( prospectiveToSave.getDocumentNumber() );
 		
-		if( isProspective.isPresent() ) {
+		if( isProspective != null ) {
 			throw new Exception("EL usuario ya se encuentra registrado");
 		};
 		
+		ProspectiveDto prospective = new ProspectiveDto();
 		Date currentDate = new Date();
-		entity.setCreatedAt( currentDate );
-		entity.setUpdatedAt( currentDate );
 		
-		return prospectiveRepository.save(entity);
+		prospective.setFirstName( prospectiveToSave.getFirstName() );
+		prospective.setSecondName( prospectiveToSave.getSecondName() );
+		prospective.setSurname( prospectiveToSave.getSurname() );
+		prospective.setSecondSurname( prospectiveToSave.getSecondSurname() );
+		prospective.setDocumentNumber( prospectiveToSave.getDocumentNumber() );
+		prospective.setDocumentType( prospectiveToSave.getDocumentType() );
+		prospective.setBirthdate( prospectiveToSave.getBirthdate() );
+		prospective.setEmail( prospectiveToSave.getEmail() );
+		prospective.setCellphone( prospectiveToSave.getCellphone() );
+		prospective.setSchoolGrade( 0 );		
+		prospective.setTermsConditions( 1 );
+		prospective.setProspectiveStatusId( 1 );
+		prospective.setCreatedAt( currentDate );
+		prospective.setUpdatedAt( currentDate );
+		
+		Prospective newProspective = prospectiveMapper.prospectiveDtoToProspective(prospective);
+		
+		return prospectiveRepository.save( newProspective );
 	}
 	
 	/**
 	 * @author Smarthink
-	 * @param document number 
-	 * @return prospective entity
+	 * @param Customer document number 
+	 * @return prospectiveDto from customer
 	 * @throws Exception if prospective doesnt exist
 	 */
 	@Override
-	public Optional<Prospective> findByDocumentNumber( Long documentNumber ) throws Exception
+	@Transactional( readOnly = true )
+	public ProspectiveDto findByDocumentNumber( Long documentNumber ) throws Exception
 	{		
-		Optional<Prospective> prospective = prospectiveRepository.findByDocumentNumber(documentNumber);
-		
-		Date currentDate = new Date();
-		System.out.println("FECHA ACTUAL: " + currentDate);
+		Optional<Prospective> prospective = prospectiveRepository.findByDocumentNumber( documentNumber );
 		
 		if( prospective.isEmpty() ) {
-			throw new Exception("No se encontro el prospective por el numero de documento indicado");
+			log.warn("No fue posible encontrar el el cliente por el numero de documento");
+			return null;
 		};
 		
-		return prospective;
+		ProspectiveDto prospectiveDto = prospectiveMapper.prospectiveToProspectiveDto( prospective.get() );
+
+		return prospectiveDto;
 	}
 
 //	@Override
@@ -95,5 +120,17 @@ public class ProspectiveServiceImp implements ProspectiveService
 	public void deleteById(Integer id) throws Exception {
 		// TODO Auto-generated method stub
 		
+	}
+	
+	/**
+	 * @author Smarthink
+	 * @param new prospective entity
+	 * @return new prospective
+	 * @throws Exception if prospective couldnt be created.
+	 */
+	@Override
+	@Transactional( readOnly = false, propagation = Propagation.REQUIRED, rollbackFor = Exception.class )
+	public Prospective save( Prospective entity ) throws Exception {	
+		return null;
 	}
 }
