@@ -29,6 +29,7 @@ public class AssessmentController
 	@Autowired
 	private WordPressService wordPressService;
 	
+	
 	/**
 	 * @param assessment
 	 * @return Creacion de assessment
@@ -55,19 +56,21 @@ public class AssessmentController
 	 * @throws Exception cuando el usuario ya realizo la nivelacion.
 	 */
 	@GetMapping("/assessments")
-	public ResponseEntity<Integer> getAssessment( @RequestParam String documentNumber, @RequestParam String documentType ) throws Exception
+	public ResponseEntity<Integer> getAssessment( @RequestParam Integer documentType, @RequestParam Integer documentNumber,
+			@RequestParam Optional<Integer> assessmentStatus) throws Exception
 	{
 		if( documentNumber == null || documentType == null ) {
 			throw new Exception("EL numero de docuemnto y el tipo no es valido para la consulta");
 		}
 		
-		Integer isAssessment = assessmentService.getAssessmentBy( documentNumber, documentType );
 		
-		if( isAssessment == 1 ) {
+		//Integer isAssessment = assessmentService.getAssessmentBy( documentNumber, documentType );
+		
+		/*if( isAssessment == 1 ) {
 			return ResponseEntity.status( HttpStatus.OK ).body( isAssessment );
-		};
+		};*/
 		
-		return ResponseEntity.status( HttpStatus.BAD_REQUEST ).body( isAssessment );
+		return ResponseEntity.status( HttpStatus.BAD_REQUEST ).body( null );
 	};
 
 	/**
@@ -96,11 +99,13 @@ public class AssessmentController
 //	 * @return levels.
 //	 * @throws Exception
 //	 */
-//	@GetMapping("/getbyprospectiveid")
-//	public ResponseEntity<Optional<Assessment>> getAssessmentLevels( @RequestParam Integer id ) throws Exception
-//	{
-//		return ResponseEntity.status( HttpStatus.OK ).body( assessmentService.findByProspectiveId( id ) );
-//	};
+	//Pendiente por probar
+	@GetMapping("/levels")
+	public ResponseEntity<?> getAssessmentLevels() throws Exception
+	{
+		Object result = this.wordPressService.getAssessmentLevels();
+		return new ResponseEntity<>(result,HttpStatus.OK);
+	};
 //
 //	/**
 //	 * @param

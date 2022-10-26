@@ -46,4 +46,13 @@ public class WordPressServiceImpl implements WordPressService{
 		Object assessmentQuestionConfig = response.getBody();	
 		return assessmentQuestionConfig;
 	}
+
+	@Override
+	public Object getAssessmentLevels() {
+		HttpEntity<?> entity = new HttpEntity<Object>(headers);
+		ResponseEntity<String> response = new RestTemplate().exchange(URL_ASSESSMENT_CONFIG_API+"levels", HttpMethod.GET,
+				entity, String.class);
+		Object responseLevels = response.getBody();	
+		return responseLevels;
+	}
 }
