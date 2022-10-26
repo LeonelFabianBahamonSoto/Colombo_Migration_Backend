@@ -24,6 +24,17 @@ eureka:
 # URL wordpress
 url:
   Wordpress: https://paginanuevadev.colomboamericano.edu.co/wp-json/cael/
+  
+#Credenciales AWS
+cloud:
+  aws:
+    region:
+      static: us-east-1
+    stack:
+      auto: false
+    credentials:
+      access-key: AKIAJP4QCHWX6XJQVKNA
+      secret-key: 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
 
 #Metrics related configurations
 management:

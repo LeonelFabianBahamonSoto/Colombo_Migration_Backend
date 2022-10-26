@@ -30,6 +30,7 @@ public class ProspectiveServiceImp implements ProspectiveService
 
 
 	/**
+	 * @author Smarthink
 	 * @param ProspectiveToSaveDto Entity
 	 * @return New Prospective
 	 * @throws Exception if the person's document number is already registered
@@ -87,6 +88,41 @@ public class ProspectiveServiceImp implements ProspectiveService
 		ProspectiveDto prospectiveDto = prospectiveMapper.prospectiveToProspectiveDto( prospective.get() );
 
 		return prospectiveDto;
+	}
+	
+	/**
+	 * @author Smarthink
+	 * @param  Customer email and program.
+	 * @return prospectiveDto from customer
+	 * @throws Exception if prospective doesnt exist
+	 */
+	@Override
+	@Transactional( readOnly = true )
+	public String sendInstructionsInterviewAssessment( String email, String program ) throws Exception
+	{		
+//    	Optional<Student> student = studentRepository.findByDocumentNumber( documentNumber );
+//
+//    	if( student.isEmpty() ) {
+//    		throw new Exception("No se encontro un estudiante asociado al numero de documento");
+//    	};
+//
+//    	String token = jwtProvider.tokenToResetPassword( documentNumber );
+//    	String response = mailService.sendResetPasswordEmail( student.get().getEmail(), token );
+//
+//    	if( !response.equals("send") ) {
+//    		throw new Exception("No fue posible enviar el email");
+//    	};
+//
+//    	ResetPassword resetPasword = new ResetPassword();
+//    	resetPasword.setEmail( student.get().getEmail() );
+//    	resetPasword.setToken( token );
+//    	resetPasword.setCreated_at( new Date() );
+//
+//    	resetPasswordRepository.save( resetPasword );
+//
+//        return response;
+		
+		return "";
 	}
 
 //	@Override

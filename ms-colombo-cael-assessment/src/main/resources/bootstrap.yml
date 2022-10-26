@@ -1,4 +1,6 @@
 spring:
+  mail:
+    host: serviciosenlinea@colomboamericano.edu.co
   application:
     name: ms-colombo-cael-assessment
   jpa:

@@ -9,4 +9,6 @@ public interface ProspectiveService extends GenericService<Prospective, Integer>
 	Prospective createProspective( ProspectiveToSaveDto prospectiveToSave ) throws Exception;
 
 	ProspectiveDto findByDocumentNumber( Long documentNumber ) throws Exception;
+	
+	String sendInstructionsInterviewAssessment( String email, String program ) throws Exception;
 } 
