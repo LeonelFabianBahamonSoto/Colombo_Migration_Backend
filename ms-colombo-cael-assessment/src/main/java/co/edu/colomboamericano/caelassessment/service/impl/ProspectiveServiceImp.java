@@ -1,16 +1,13 @@
 package co.edu.colomboamericano.caelassessment.service.impl;
 
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -230,5 +227,11 @@ public class ProspectiveServiceImp implements ProspectiveService
 		Prospective prospective = new Prospective();
 		prospective = generateDtoFindDocument(documentType,documentNumber);
 		return prospective;
+	}
+
+	@Override
+	public String sendInstructionsInterviewAssessment(String email, String program) throws Exception {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }
