@@ -5,6 +5,12 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,8 +28,10 @@ import co.edu.colomboamericano.caelassessment.dto.ProspectiveByDateRangeFilterDt
 import co.edu.colomboamericano.caelassessment.dto.ProspectiveDto;
 import co.edu.colomboamericano.caelassessment.dto.ProspectiveToSaveDto;
 import co.edu.colomboamericano.caelassessment.entity.Prospective;
+import co.edu.colomboamericano.caelassessment.entity.ProspectiveStatus;
 import co.edu.colomboamericano.caelassessment.mapper.ProspectiveMapper;
 import co.edu.colomboamericano.caelassessment.repository.ProspectiveRepository;
+import co.edu.colomboamericano.caelassessment.repository.ProspectiveRepositoryCustom;
 import co.edu.colomboamericano.caelassessment.service.ProspectiveService;
 import lombok.extern.slf4j.Slf4j;
 
@@ -43,6 +51,8 @@ public class ProspectiveServiceImp implements ProspectiveService
 	
 	@Value("${url.SOFI_GATEWAY_API}")
 	private String sofiGatewayService;
+	private ProspectiveRepositoryCustom prospectiveRepositoryCustom;
+
 
 	/**
 	 * @author Smarthink
@@ -181,5 +191,44 @@ public class ProspectiveServiceImp implements ProspectiveService
 	@Transactional( readOnly = false, propagation = Propagation.REQUIRED, rollbackFor = Exception.class )
 	public Prospective save( Prospective entity ) throws Exception {	
 		return null;
+	}
+
+
+	@Override
+	public Prospective generateDtoFindDocument(Integer documentType,Long documentNumber) throws Exception {
+		List<Object> resultFindDocument =  prospectiveRepositoryCustom.findByDocument(documentType, documentNumber);
+
+		Prospective prospective = new Prospective();
+		ProspectiveStatus prospectiveStatus = new ProspectiveStatus();
+		 for (Iterator iterator = resultFindDocument.iterator(); iterator.hasNext();) {
+			Object[] object = (Object[]) iterator.next();
+			if (String.valueOf(object[0]).equals("null")) {
+				return null;
+			}
+			prospective.setId(Integer.parseInt(String.valueOf(object[0])));
+			prospective.setFirstName(String.valueOf(object[1]));
+			prospective.setSecondName(String.valueOf(object[2]));
+			prospective.setSurname(String.valueOf(object[3]));
+			prospective.setSecondSurname(String.valueOf(object[4]));
+			prospective.setDocumentNumber(Long.parseLong(String.valueOf(object[5])));
+			prospective.setBirthdate(LocalDate.parse(String.valueOf(object[6])));
+			prospective.setDocumentType(Integer.parseInt(String.valueOf(object[7])));
+			prospective.setEmail(String.valueOf(object[8]));
+			prospective.setCellphone(String.valueOf(object[9]));
+			prospective.setSchoolGrade(Integer.parseInt(String.valueOf(object[10])));
+			prospective.setTermsConditions(Integer.parseInt(String.valueOf(object[11])));
+			prospective.setCreatedAt(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(String.valueOf(object[12])));
+			prospective.setUpdatedAt(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(String.valueOf(object[13])));
+			prospectiveStatus.setId(Integer.parseInt(String.valueOf(object[14])));
+			prospective.setProspectiveStatusId(prospectiveStatus);
+		}
+		return prospective;
+	}
+
+	@Override
+	public Prospective getFindByDocument(Integer documentType, Long documentNumber) throws Exception {
+		Prospective prospective = new Prospective();
+		prospective = generateDtoFindDocument(documentType,documentNumber);
+		return prospective;
 	}
 }
