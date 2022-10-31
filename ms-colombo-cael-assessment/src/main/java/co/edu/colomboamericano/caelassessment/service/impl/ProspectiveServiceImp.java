@@ -48,6 +48,8 @@ public class ProspectiveServiceImp implements ProspectiveService
 	
 	@Value("${url.SOFI_GATEWAY_API}")
 	private String sofiGatewayService;
+	
+	@Autowired
 	private ProspectiveRepositoryCustom prospectiveRepositoryCustom;
 
 

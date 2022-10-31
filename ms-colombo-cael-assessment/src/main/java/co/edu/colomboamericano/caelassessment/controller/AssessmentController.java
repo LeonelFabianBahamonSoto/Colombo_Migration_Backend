@@ -78,7 +78,7 @@ public class AssessmentController
 		if (prospective == null) {
 			throw new ModeloNotFoundException("Prospective doesn't exist");
 		}
-		System.out.println("datos a consultar"+prospective.getId()+" "+prospective.getProspectiveStatusId().getId());
+
 		assessment = assessmentService.generateDtoAssessmentByStatusAndProspective(prospective.getId(), prospective.getProspectiveStatusId().getId());
 		if (assessment == null) {
 			throw new ModeloNotFoundException("Assessment not found");
