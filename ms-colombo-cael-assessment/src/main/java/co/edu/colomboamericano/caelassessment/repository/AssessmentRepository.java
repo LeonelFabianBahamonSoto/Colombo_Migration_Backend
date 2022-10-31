@@ -21,4 +21,8 @@ public interface AssessmentRepository extends JpaRepository<Assessment, Integer>
 	
 	@Query(value = "SELECT * FROM miniveldeingles.assessment limit 10", nativeQuery = true)
 	List<Assessment> findAllAssessment();
+	
+	@Query(value = "SELECT * FROM miniveldeingles.assessment limit 10", nativeQuery = true)
+	List<Assessment>  getAssessment();
+	
 }

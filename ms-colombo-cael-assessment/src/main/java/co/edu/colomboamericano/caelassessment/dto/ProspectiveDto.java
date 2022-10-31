@@ -1,5 +1,6 @@
 package co.edu.colomboamericano.caelassessment.dto;
 
+import java.time.LocalDate;
 import java.util.Date;
 
 import javax.validation.constraints.Email;
@@ -34,7 +35,7 @@ public class ProspectiveDto
 	@NotNull(message = "El numero de documento del estudiante no puede ser nulo")
     private Long documentNumber;
 	
-    private Date birthdate;
+    private LocalDate birthdate;
 	
 	@NotNull(message = "El tipo de documento del estudiante no puede ser nulo")
 	private Integer documentType;

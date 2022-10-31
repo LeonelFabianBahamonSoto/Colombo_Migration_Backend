@@ -1,5 +1,10 @@
 package co.edu.colomboamericano.caelassessment.service.impl;
 
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
@@ -9,7 +14,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import co.edu.colomboamericano.caelassessment.entity.Assessment;
+import co.edu.colomboamericano.caelassessment.entity.AssessmentStatus;
+import co.edu.colomboamericano.caelassessment.entity.Prospective;
 import co.edu.colomboamericano.caelassessment.repository.AssessmentRepository;
+import co.edu.colomboamericano.caelassessment.repository.AssessmentRepositoryCustom;
 import co.edu.colomboamericano.caelassessment.service.AssessmentService;
 
 @Service
@@ -18,6 +26,9 @@ public class AssessmentServiceImp implements AssessmentService
 {
 	@Autowired
 	AssessmentRepository assessmentRepositrory;
+	
+	@Autowired
+	private AssessmentRepositoryCustom assessmentRepositoryCustom;
 	
 	/**
 	 * @param Numero documento 'documentNumber', tipo del documento 'documentType', nivel 'level',
@@ -93,6 +104,58 @@ public class AssessmentServiceImp implements AssessmentService
 	public void deleteById(Integer id) throws Exception {
 		// TODO Auto-generated method stub
 		
+	}
+
+	@Override
+	public Assessment generateDtoAssessmentByStatusAndProspective(Integer prospectiveId,Integer assessmentStatusId) throws Exception {
+		List<Object> resultGetAssessment = assessmentRepositoryCustom.getAssesment(prospectiveId, assessmentStatusId);
+
+		Assessment assessment = new Assessment();
+		 for (Iterator iterator = resultGetAssessment.iterator(); iterator.hasNext();) {
+			 AssessmentStatus assessmentStatus = new AssessmentStatus();
+			 Prospective prospective = new Prospective();
+			Object[] object = (Object[]) iterator.next();
+			if (String.valueOf(object[0]).equals("null")) {
+				return null;
+			}
+			assessment.setId(Integer.parseInt(String.valueOf(object[0])));
+			assessment.setCourse(String.valueOf(object[1]));
+			assessment.setAssessments(String.valueOf(object[2]));
+			assessment.setQuestionsStepper(String.valueOf(object[3]));
+			assessment.setRemainingTime(Integer.parseInt(String.valueOf(object[4])));
+			assessment.setCreateAt(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(String.valueOf(object[7])));
+			assessment.setUpdateAt(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(String.valueOf(object[8])));
+			assessment.setProgram(String.valueOf(object[9]));
+			assessment.setHeadquarter(String.valueOf(object[10]));
+			
+			prospective.setId(Integer.parseInt(String.valueOf(object[11])));
+			prospective.setFirstName(String.valueOf(object[12]));
+			prospective.setSecondName(String.valueOf(object[13]));
+			prospective.setSurname(String.valueOf(object[14]));
+			prospective.setSecondSurname(String.valueOf(object[15]));
+			prospective.setDocumentNumber(Long.parseLong(String.valueOf(object[16])));
+			prospective.setBirthdate(LocalDate.parse(String.valueOf(object[17])));
+			prospective.setEmail(String.valueOf(object[18]));
+			prospective.setCellphone(String.valueOf(object[19]));
+			prospective.setSchoolGrade(Integer.parseInt(String.valueOf(object[20])));
+			prospective.setTermsConditions(Integer.parseInt(String.valueOf(object[21])));
+			prospective.setCreatedAt(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(String.valueOf(object[23])));
+			prospective.setUpdatedAt(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(String.valueOf(object[24])));
+			prospective.setDocumentType(Integer.parseInt(String.valueOf(object[25])));
+			
+			assessmentStatus.setId(Integer.parseInt(String.valueOf(object[5])));
+			assessmentStatus.setName(String.valueOf(object[27]));
+			assessmentStatus.setKey(String.valueOf(object[28]));
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.n");
+			assessmentStatus.setCreatedAt(LocalDateTime.parse(String.valueOf(object[29]), formatter));
+			assessmentStatus.setUpdatedAt(LocalDateTime.parse(String.valueOf(object[30]), formatter));
+			assessment.setAssessmentStatus(assessmentStatus);
+			assessment.setProspective(prospective);
+			
+		
+			
+		}
+		return assessment;
 	}
 
 }

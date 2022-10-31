@@ -16,7 +16,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import co.edu.colomboamericano.caelassessment.entity.Assessment;
+import co.edu.colomboamericano.caelassessment.entity.Prospective;
+import co.edu.colomboamericano.caelassessment.exception.ModeloNotFoundException;
+import co.edu.colomboamericano.caelassessment.repository.ProspectiveRepositoryCustom;
 import co.edu.colomboamericano.caelassessment.service.AssessmentService;
+import co.edu.colomboamericano.caelassessment.service.ProspectiveService;
 import co.edu.colomboamericano.caelassessment.service.WordPressService;
 
 @RestController
@@ -28,6 +32,10 @@ public class AssessmentController
 	
 	@Autowired
 	private WordPressService wordPressService;
+	
+	@Autowired
+	private ProspectiveService prospectiveService;
+	
 	
 	
 	/**
@@ -51,26 +59,32 @@ public class AssessmentController
 	};
 	
 	/**
+	 * Gets an assessment by propspective information.
 	 * @param Numero documento 'documentNumber', tipo del documento 'documentType'
 	 * @return BadRequest para que el usuario pueda continuar de lo contrario es que ya realizo una previamente.
 	 * @throws Exception cuando el usuario ya realizo la nivelacion.
 	 */
 	@GetMapping("/assessments")
-	public ResponseEntity<Integer> getAssessment( @RequestParam Integer documentType, @RequestParam Integer documentNumber,
+	public ResponseEntity<?> getAssessment(@RequestParam Integer documentType, @RequestParam Long documentNumber,
 			@RequestParam Optional<Integer> assessmentStatus) throws Exception
 	{
 		if( documentNumber == null || documentType == null ) {
 			throw new Exception("EL numero de docuemnto y el tipo no es valido para la consulta");
 		}
 		
+		Prospective prospective = new Prospective();
+		Assessment assessment = new Assessment();
+		prospective = prospectiveService.getFindByDocument(documentType, documentNumber);
+		if (prospective == null) {
+			throw new ModeloNotFoundException("Prospective doesn't exist");
+		}
+		System.out.println("datos a consultar"+prospective.getId()+" "+prospective.getProspectiveStatusId().getId());
+		assessment = assessmentService.generateDtoAssessmentByStatusAndProspective(prospective.getId(), prospective.getProspectiveStatusId().getId());
+		if (assessment == null) {
+			throw new ModeloNotFoundException("Assessment not found");
+		}
 		
-		//Integer isAssessment = assessmentService.getAssessmentBy( documentNumber, documentType );
-		
-		/*if( isAssessment == 1 ) {
-			return ResponseEntity.status( HttpStatus.OK ).body( isAssessment );
-		};*/
-		
-		return ResponseEntity.status( HttpStatus.BAD_REQUEST ).body( null );
+		return new ResponseEntity<>(assessment,HttpStatus.OK);
 	};
 
 	/**
