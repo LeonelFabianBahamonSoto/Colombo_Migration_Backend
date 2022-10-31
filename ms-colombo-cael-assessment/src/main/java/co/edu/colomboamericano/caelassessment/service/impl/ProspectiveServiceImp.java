@@ -51,6 +51,8 @@ public class ProspectiveServiceImp implements ProspectiveService
 	
 	@Value("${url.SOFI_GATEWAY_API}")
 	private String sofiGatewayService;
+	
+	@Autowired
 	private ProspectiveRepositoryCustom prospectiveRepositoryCustom;
 
 
@@ -230,5 +232,11 @@ public class ProspectiveServiceImp implements ProspectiveService
 		Prospective prospective = new Prospective();
 		prospective = generateDtoFindDocument(documentType,documentNumber);
 		return prospective;
+	}
+
+	@Override
+	public String sendInstructionsInterviewAssessment(String email, String program) throws Exception {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }
