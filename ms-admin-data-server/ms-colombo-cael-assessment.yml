@@ -26,6 +26,8 @@ eureka:
 # URL wordpress
 url:
   Wordpress: https://paginanuevadev.colomboamericano.edu.co/wp-json/cael/
+  SOFI_GATEWAY_API: https://api-serviciosenlinea.colomboamericano.edu.co/api/v1
+#  SOFI_GATEWAY_API: https://dev-api-sofi.colomboamericano.edu.co/api/v1/docs
   
 #Credenciales AWS
 cloud:

@@ -1,5 +1,10 @@
 package co.edu.colomboamericano.caelassessment.service.impl;
 
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -9,11 +14,17 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 
+import co.edu.colomboamericano.caelassessment.dto.FindByFilterDto;
+import co.edu.colomboamericano.caelassessment.dto.ProspectiveByDateRangeFilterDto;
 import co.edu.colomboamericano.caelassessment.dto.ProspectiveDto;
 import co.edu.colomboamericano.caelassessment.dto.ProspectiveToSaveDto;
 import co.edu.colomboamericano.caelassessment.entity.Prospective;
@@ -36,6 +47,10 @@ public class ProspectiveServiceImp implements ProspectiveService
 	private ProspectiveMapper prospectiveMapper;
 	
 	@Autowired
+	private RestTemplate restTemplate;
+	
+	@Value("${url.SOFI_GATEWAY_API}")
+	private String sofiGatewayService;
 	private ProspectiveRepositoryCustom prospectiveRepositoryCustom;
 
 
@@ -102,46 +117,44 @@ public class ProspectiveServiceImp implements ProspectiveService
 	
 	/**
 	 * @author Smarthink
-	 * @param  Customer email and program.
-	 * @return prospectiveDto from customer
+	 * @param  Take, Skip and filter.
+	 * @return Json with findByFilterDto and numberOfRows of a relationship of the Assessment and Prospective tables.
 	 * @throws Exception if prospective doesnt exist
 	 */
 	@Override
 	@Transactional( readOnly = true )
-	public String sendInstructionsInterviewAssessment( String email, String program ) throws Exception
+	public Map<String, Object> findByFilter( Integer take, Integer skip, String filter ) throws Exception
 	{		
-//    	Optional<Student> student = studentRepository.findByDocumentNumber( documentNumber );
-//
-//    	if( student.isEmpty() ) {
-//    		throw new Exception("No se encontro un estudiante asociado al numero de documento");
-//    	};
-//
-//    	String token = jwtProvider.tokenToResetPassword( documentNumber );
-//    	String response = mailService.sendResetPasswordEmail( student.get().getEmail(), token );
-//
-//    	if( !response.equals("send") ) {
-//    		throw new Exception("No fue posible enviar el email");
-//    	};
-//
-//    	ResetPassword resetPasword = new ResetPassword();
-//    	resetPasword.setEmail( student.get().getEmail() );
-//    	resetPasword.setToken( token );
-//    	resetPasword.setCreated_at( new Date() );
-//
-//    	resetPasswordRepository.save( resetPasword );
-//
-//        return response;
+		ArrayList<FindByFilterDto> listOfProspectives = prospectiveRepository.listOfProspectiveAndAssessment( skip, take, filter);
+		Integer numberOfRows = prospectiveRepository.numberOfProspectiveAndAssessment(skip, take, filter);
 		
-		return "";
+		Map<String, Object> response = new HashMap<>();
+		response.put("count", String.valueOf( numberOfRows ) );
+		response.put("prospectives", listOfProspectives);
+
+		return response;
 	}
 
-//	@Override
-//	public List<Prospective> findTen()
-//	{
-//		List<Prospective> prospective = prospectiveRepository.findTen();
-//		System.out.println("DOCUMEBT NUMBER: " + prospective);
-//		return prospective;
-//	}
+	@Override
+	@Transactional( readOnly = true )
+	public List<ProspectiveByDateRangeFilterDto> findByDateRangeFilter( Date startDate, Date endDate ) throws Exception 
+	{
+		List<ProspectiveByDateRangeFilterDto> listOfProspectives = prospectiveRepository.findByDateRangeFilterQuery(startDate, endDate);
+		List<Object> datos = new ArrayList<>();
+		
+		for( ProspectiveByDateRangeFilterDto prospective : listOfProspectives )
+		{
+			ResponseEntity<Object> registerProspective = restTemplate.getForEntity( sofiGatewayService + "/sofi-students?documentNumber=" + prospective.getDocumentNumber(), Object.class );
+			
+			if(  registerProspective.getStatusCode() == HttpStatus.OK )
+			{
+				datos.add(listOfProspectives);
+			};
+			
+		};
+		
+		return listOfProspectives;
+	}
 
 	@Override
 	public Optional<Prospective> findById(Integer id) {
