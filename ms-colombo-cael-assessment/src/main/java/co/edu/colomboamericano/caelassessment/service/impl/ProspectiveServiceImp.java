@@ -11,17 +11,13 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.RestTemplate;
 
 import co.edu.colomboamericano.caelassessment.dto.FindByFilterDto;
-import co.edu.colomboamericano.caelassessment.dto.ProspectiveByDateRangeFilterDto;
+import co.edu.colomboamericano.caelassessment.dto.ProspectiveByDateRangeStateFilterDto;
 import co.edu.colomboamericano.caelassessment.dto.ProspectiveDto;
 import co.edu.colomboamericano.caelassessment.dto.ProspectiveToSaveDto;
 import co.edu.colomboamericano.caelassessment.entity.Prospective;
@@ -30,6 +26,7 @@ import co.edu.colomboamericano.caelassessment.mapper.ProspectiveMapper;
 import co.edu.colomboamericano.caelassessment.repository.ProspectiveRepository;
 import co.edu.colomboamericano.caelassessment.repository.ProspectiveRepositoryCustom;
 import co.edu.colomboamericano.caelassessment.service.ProspectiveService;
+import co.edu.colomboamericano.caelassessment.utils.ProspectiveSofiHelper;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -44,14 +41,10 @@ public class ProspectiveServiceImp implements ProspectiveService
 	private ProspectiveMapper prospectiveMapper;
 	
 	@Autowired
-	private RestTemplate restTemplate;
-	
-	@Value("${url.SOFI_GATEWAY_API}")
-	private String sofiGatewayService;
+	private ProspectiveRepositoryCustom prospectiveRepositoryCustom;
 	
 	@Autowired
-	private ProspectiveRepositoryCustom prospectiveRepositoryCustom;
-
+	private ProspectiveSofiHelper prospectiveSofiHelper;
 
 	/**
 	 * @author Smarthink
@@ -64,14 +57,14 @@ public class ProspectiveServiceImp implements ProspectiveService
 	public Prospective createProspective( ProspectiveToSaveDto prospectiveToSave ) throws Exception
 	{
 		ProspectiveDto isProspective = findByDocumentNumber( prospectiveToSave.getDocumentNumber() );
-		
+
 		if( isProspective != null ) {
 			throw new Exception("EL usuario ya se encuentra registrado");
 		};
-		
+
 		ProspectiveDto prospective = new ProspectiveDto();
 		Date currentDate = new Date();
-		
+
 		prospective.setFirstName( prospectiveToSave.getFirstName() );
 		prospective.setSecondName( prospectiveToSave.getSecondName() );
 		prospective.setSurname( prospectiveToSave.getSurname() );
@@ -86,9 +79,9 @@ public class ProspectiveServiceImp implements ProspectiveService
 		prospective.setProspectiveStatusId( 1 );
 		prospective.setCreatedAt( currentDate );
 		prospective.setUpdatedAt( currentDate );
-		
+
 		Prospective newProspective = prospectiveMapper.prospectiveDtoToProspective(prospective);
-		
+
 		return prospectiveRepository.save( newProspective );
 	}
 	
@@ -133,65 +126,34 @@ public class ProspectiveServiceImp implements ProspectiveService
 
 		return response;
 	}
-
-	@Override
-	@Transactional( readOnly = true )
-	public List<ProspectiveByDateRangeFilterDto> findByDateRangeFilter( Date startDate, Date endDate ) throws Exception 
-	{
-		List<ProspectiveByDateRangeFilterDto> listOfProspectives = prospectiveRepository.findByDateRangeFilterQuery(startDate, endDate);
-		List<Object> datos = new ArrayList<>();
-		
-		for( ProspectiveByDateRangeFilterDto prospective : listOfProspectives )
-		{
-			ResponseEntity<Object> registerProspective = restTemplate.getForEntity( sofiGatewayService + "/sofi-students?documentNumber=" + prospective.getDocumentNumber(), Object.class );
-			
-			if(  registerProspective.getStatusCode() == HttpStatus.OK )
-			{
-				datos.add(listOfProspectives);
-			};
-			
-		};
-		
-		return listOfProspectives;
-	}
-
-	@Override
-	public Optional<Prospective> findById(Integer id) {
-		// TODO Auto-generated method stub
-		return Optional.empty();
-	}
-
-
-	@Override
-	public Prospective update(Prospective entity) throws Exception {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public void delete(Prospective entity) throws Exception {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void deleteById(Integer id) throws Exception {
-		// TODO Auto-generated method stub
-		
-	}
 	
 	/**
 	 * @author Smarthink
-	 * @param new prospective entity
-	 * @return new prospective
-	 * @throws Exception if prospective couldnt be created.
+	 * @param State letter, Start and End date for filter in the sql query
+	 * @return List of existing students
 	 */
 	@Override
-	@Transactional( readOnly = false, propagation = Propagation.REQUIRED, rollbackFor = Exception.class )
-	public Prospective save( Prospective entity ) throws Exception {	
-		return null;
-	}
+	@Transactional( readOnly = true )
+	public List<ProspectiveByDateRangeStateFilterDto> findByDateRangeFilterAndState( Date startDate, Date endDate, String state ) throws Exception 
+	{
+		List<ProspectiveByDateRangeStateFilterDto> listOfProspectives = prospectiveRepository.findByDateRangeFilterAndStateQuery( startDate, endDate );
+		if( listOfProspectives == null ) throw new Exception("No pue posible obtener el listado en listOfProspectives");
+		
+		List<ProspectiveByDateRangeStateFilterDto> responseList = new ArrayList<ProspectiveByDateRangeStateFilterDto>();
+		
+		for( ProspectiveByDateRangeStateFilterDto prospective : listOfProspectives )
+		{
+			String isStudent = prospectiveSofiHelper.consultStudentSofi( Long.parseLong( prospective.getDocumentNumber() ) );
 
+			if( state.equals("R") && !isStudent.equalsIgnoreCase("Student not found") ) responseList.add(prospective);
+
+			if( state.equals("NR") && isStudent.equalsIgnoreCase("Student not found") ) responseList.add(prospective);
+
+			if( !state.equals("R") && !state.equals("NR") ) responseList.add(prospective);
+		};
+
+		return responseList;
+	};
 
 	@Override
 	public Prospective generateDtoFindDocument(Integer documentType,Long documentNumber) throws Exception {
@@ -225,6 +187,11 @@ public class ProspectiveServiceImp implements ProspectiveService
 	}
 
 	@Override
+	public Prospective save( Prospective entity ) throws Exception {	
+		return null;
+	}
+
+	@Override
 	public Prospective getFindByDocument(Integer documentType, Long documentNumber) throws Exception {
 		Prospective prospective = new Prospective();
 		prospective = generateDtoFindDocument(documentType,documentNumber);
@@ -235,5 +202,25 @@ public class ProspectiveServiceImp implements ProspectiveService
 	public String sendInstructionsInterviewAssessment(String email, String program) throws Exception {
 		// TODO Auto-generated method stub
 		return null;
+	}
+	
+	@Override
+	public Optional<Prospective> findById(Integer id) {
+		return null; // INACTIVE METHOD
+	}
+
+	@Override
+	public Prospective update(Prospective entity) throws Exception {
+		return null; // INACTIVE METHOD
+	}
+
+	@Override
+	public void delete(Prospective entity) throws Exception {
+		// INACTIVE METHOD
+	}
+
+	@Override
+	public void deleteById(Integer id) throws Exception {
+		// INACTIVE METHOD
 	}
 }
