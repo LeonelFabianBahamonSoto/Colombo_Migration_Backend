@@ -11,5 +11,5 @@ public class CurrentQuestion {
 	private String title;
 	private String typeName;
 	private Object multimediaFile;
-	private GenericQuestion question;
+	private Object question;
 }

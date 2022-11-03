@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import co.edu.colomboamericano.caelassessment.entity.Assessment;
@@ -24,5 +25,8 @@ public interface AssessmentRepository extends JpaRepository<Assessment, Integer>
 	
 	@Query(value = "SELECT * FROM miniveldeingles.assessment limit 10", nativeQuery = true)
 	List<Assessment>  getAssessment();
+	
+	@Query(value = "select questionsStepper from assessment where id = :id", nativeQuery = true)
+	String  getAssessmentQuestion(@Param("id")Integer id);
 	
 }

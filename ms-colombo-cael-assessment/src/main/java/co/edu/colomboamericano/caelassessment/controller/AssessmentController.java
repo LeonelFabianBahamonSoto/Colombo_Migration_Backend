@@ -1,6 +1,8 @@
 package co.edu.colomboamericano.caelassessment.controller;
 
+import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 
 import javax.validation.Valid;
@@ -15,9 +17,16 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.lang.reflect.Type;
+import com.google.common.reflect.TypeToken;
+import com.google.gson.Gson;
+
+import co.edu.colomboamericano.caelassessment.dto.CurrentQuestion;
+import co.edu.colomboamericano.caelassessment.dto.Root;
 import co.edu.colomboamericano.caelassessment.entity.Assessment;
 import co.edu.colomboamericano.caelassessment.entity.Prospective;
 import co.edu.colomboamericano.caelassessment.exception.ModeloNotFoundException;
+import co.edu.colomboamericano.caelassessment.repository.AssessmentRepository;
 import co.edu.colomboamericano.caelassessment.repository.ProspectiveRepositoryCustom;
 import co.edu.colomboamericano.caelassessment.service.AssessmentService;
 import co.edu.colomboamericano.caelassessment.service.ProspectiveService;
@@ -36,6 +45,8 @@ public class AssessmentController
 	@Autowired
 	private ProspectiveService prospectiveService;
 	
+	@Autowired
+	private AssessmentRepository assessmentRepository;
 	
 	
 	/**
@@ -152,12 +163,19 @@ public class AssessmentController
 //	 * @return levels.
 //	 * @throws Exception
 //	 */
-//	@GetMapping("/getAssessmentQuestion")
-//	public ResponseEntity<Optional<Assessment>> getAssessmentQuestion( @RequestParam Integer id ) throws Exception
-//	{
-//		return ResponseEntity.status( HttpStatus.OK ).body( assessmentService.findByProspectiveId( id ) );
-//	};
-//	
+	@GetMapping("/getAssessmentQuestion")
+	public ResponseEntity<?> getAssessmentQuestion( @RequestParam Integer id ) throws Exception
+	{
+		/*
+		Gson gson = new Gson();
+		String resultQuery = assessmentRepository.getAssessmentQuestion(id);
+	
+		Type collectionType  =  new TypeToken<List<Root>>() {}.getType();
+		List<Root> root = gson.fromJson(resultQuery, collectionType);*/
+		//CurrentQuestion currentQuestion = assessmentService.getCurrentCuestion(id);
+		return new ResponseEntity<>(assessmentService.transformAssessmentsAndQuestionStepper(id),HttpStatus.OK);
+	};
+	
 //	/**
 //	 * @param
 //	 * @return levels.

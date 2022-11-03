@@ -1,9 +1,11 @@
 package co.edu.colomboamericano.caelassessment.service.impl;
 
+import java.lang.reflect.Type;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
@@ -13,6 +15,18 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.google.common.reflect.TypeToken;
+import com.google.gson.Gson;
+
+import co.edu.colomboamericano.caelassessment.dto.CorrectOrderDraggable;
+import co.edu.colomboamericano.caelassessment.dto.CurrentQuestion;
+import co.edu.colomboamericano.caelassessment.dto.GenericQuestion;
+import co.edu.colomboamericano.caelassessment.dto.Question;
+import co.edu.colomboamericano.caelassessment.dto.QuestionStepper;
+import co.edu.colomboamericano.caelassessment.dto.QuestionType;
+import co.edu.colomboamericano.caelassessment.dto.QuestionsGroup;
+import co.edu.colomboamericano.caelassessment.dto.Root;
+import co.edu.colomboamericano.caelassessment.dto.SelectSingleAnswer;
 import co.edu.colomboamericano.caelassessment.entity.Assessment;
 import co.edu.colomboamericano.caelassessment.entity.AssessmentStatus;
 import co.edu.colomboamericano.caelassessment.entity.Prospective;
@@ -30,6 +44,10 @@ public class AssessmentServiceImp implements AssessmentService
 	@Autowired
 	private AssessmentRepositoryCustom assessmentRepositoryCustom;
 	
+	@Autowired
+	private AssessmentRepository assessmentRepository;
+	
+	private Gson gson = new Gson();
 	/**
 	 * @param Numero documento 'documentNumber', tipo del documento 'documentType', nivel 'level',
 	 * programa 'program', sede 'headquarter', fecha nacimiento 'birthdate'.
@@ -156,6 +174,94 @@ public class AssessmentServiceImp implements AssessmentService
 			
 		}
 		return assessment;
+	}
+
+	
+	/*
+	 * transformar la columna assements que es un json a una clase y igualmente para
+	 * un QuestionStepper
+	 */
+	
+	@Override
+	public Object transformAssessmentsAndQuestionStepper(Integer id) throws Exception {
+		List<Object> resultQuery = assessmentRepositoryCustom.getAssementAndQuestionsStepper(id);
+		List<Root> root = new ArrayList<Root>();
+		Type collectionType  =  new TypeToken<List<Root>>() {}.getType();
+		QuestionStepper questionStepper = new QuestionStepper();
+		 for (Iterator iterator = resultQuery.iterator(); iterator.hasNext();) {
+			 Object[] object = (Object[]) iterator.next();
+				if (String.valueOf(object[0]).equals("null")) {
+					return null;
+				}
+				root = gson.fromJson(String.valueOf(object[0]), collectionType);
+				questionStepper = gson.fromJson(String.valueOf(object[1]), QuestionStepper.class);	
+		}
+		 Object resultGenerate = generateCurrentCuestion(root,questionStepper);
+		 return resultGenerate;
+	}
+	
+	
+	/*
+	 * generar un CurrentQuestion basado en el questionStepper
+	 */
+	public Object generateCurrentCuestion(List<Root> roots,QuestionStepper questionStepper ) {
+		Root root = getLastIndexAssessments(roots);
+		CurrentQuestion currentQuestion = new CurrentQuestion();
+		Question question = new Question();
+		currentQuestion.setQuestionGroupId(root.getQuestionsGroup().get(questionStepper.getQuestionGroupIndex()).getQuestionGroupId());
+		currentQuestion.setTitle(root.getQuestionsGroup().get(questionStepper.getQuestionGroupIndex()).getTitle());
+		currentQuestion.setQuestionTypeId(root.getQuestionsGroup().get(questionStepper.getQuestionGroupIndex())
+				.getQuestionTypes().get(questionStepper.getQuestionTypeIndex()).getID());
+		currentQuestion.setTypeName(root.getQuestionsGroup().get(questionStepper.getQuestionGroupIndex())
+				.getQuestionTypes().get(questionStepper.getQuestionTypeIndex()).getTypeName());
+		currentQuestion.setMultimediaFile(root.getQuestionsGroup().get(questionStepper.getQuestionGroupIndex())
+				.getQuestionTypes().get(questionStepper.getQuestionTypeIndex()).getMultimediaFile());
+		currentQuestion.setQuestionId(root.getQuestionsGroup().get(questionStepper.getQuestionGroupIndex())
+				.getQuestionTypes().get(questionStepper.getQuestionTypeIndex()).getQuestions()
+				.get(questionStepper.getQuestionIndex()).getID());
+		question = root.getQuestionsGroup().get(questionStepper.getQuestionGroupIndex())
+		.getQuestionTypes().get(questionStepper.getQuestionTypeIndex()).getQuestions()
+		.get(questionStepper.getQuestionIndex());
+		Object resultTrasnformQuestion= transformQuestion(currentQuestion.getTypeName(),question);
+		currentQuestion.setQuestion(resultTrasnformQuestion);
+		return currentQuestion;
+	}
+	
+	/*
+	 * obtener la ultima pocision del array de la columna assessments 
+	 * 
+	 */
+	public Root getLastIndexAssessments(List<Root> roots) {
+		int lastIndex = roots.size() - 1;
+		Root root =  roots.get(lastIndex);
+		return root;
+	}
+	
+	public Object transformQuestion(String typeName,Question question) {
+		SelectSingleAnswer selectSingleAnswer = new SelectSingleAnswer();
+		CorrectOrderDraggable correctOrderDraggable = new CorrectOrderDraggable();
+		String resultTypeName = putFirsLetterInUppercase(typeName);
+		
+		if (SelectSingleAnswer.class.getSimpleName().equals(resultTypeName)) {
+			selectSingleAnswer.setQuestion(question);
+			return selectSingleAnswer;
+		} 
+		
+		if(CorrectOrderDraggable.class.getSimpleName().equals(resultTypeName)) {
+			correctOrderDraggable.setQuestion(question);
+			return correctOrderDraggable;
+		}
+	
+		return null;
+	}
+	
+	
+	public String putFirsLetterInUppercase(String typeName) {
+		if (typeName == null || typeName.isEmpty()) {
+	        return typeName;
+	    }
+		String result = typeName.substring(0,1).toUpperCase()+typeName.substring(1);
+		return result;
 	}
 
 }
