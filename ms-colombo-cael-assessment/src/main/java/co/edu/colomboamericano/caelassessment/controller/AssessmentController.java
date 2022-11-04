@@ -1,12 +1,11 @@
 package co.edu.colomboamericano.caelassessment.controller;
 
-import java.util.Collection;
 import java.util.Date;
-import java.util.List;
 import java.util.Optional;
 
 import javax.validation.Valid;
 
+import org.apache.commons.lang.time.DateFormatUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,20 +16,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.lang.reflect.Type;
-import com.google.common.reflect.TypeToken;
-import com.google.gson.Gson;
-
-import co.edu.colomboamericano.caelassessment.dto.CurrentQuestion;
-import co.edu.colomboamericano.caelassessment.dto.Root;
+import co.edu.colomboamericano.caelassessment.dto.ProspectiveDto;
 import co.edu.colomboamericano.caelassessment.entity.Assessment;
 import co.edu.colomboamericano.caelassessment.entity.Prospective;
 import co.edu.colomboamericano.caelassessment.exception.ModeloNotFoundException;
 import co.edu.colomboamericano.caelassessment.repository.AssessmentRepository;
-import co.edu.colomboamericano.caelassessment.repository.ProspectiveRepositoryCustom;
 import co.edu.colomboamericano.caelassessment.service.AssessmentService;
 import co.edu.colomboamericano.caelassessment.service.ProspectiveService;
 import co.edu.colomboamericano.caelassessment.service.WordPressService;
+import co.edu.colomboamericano.caelassessment.utils.AssessmentWordPressHelper;
 
 @RestController
 @RequestMapping("/v1/assessment")
@@ -48,6 +42,9 @@ public class AssessmentController
 	@Autowired
 	private AssessmentRepository assessmentRepository;
 	
+	@Autowired
+	private AssessmentWordPressHelper assessmentWordPressHelper;
+	
 	
 	/**
 	 * @param assessment
@@ -58,13 +55,26 @@ public class AssessmentController
 	public ResponseEntity<Assessment> createAssessment( @Valid @RequestParam Integer documentType, @RequestParam Long documentNumber,
 			@RequestParam Date birthdate, @RequestParam String level, @RequestParam String program, @RequestParam String headquarter ) throws Exception
 	{
-		//Consulta el prospective si existe estalla
+		ProspectiveDto isProspective = prospectiveService.findByDocumentNumber( documentNumber );
+		if( isProspective == null ) throw new Exception( "La persona con numero de documento " + documentNumber + " no se encuentra registrado en la tabla prospectives" );
 		
-		//Consulta el assessmentConfig si existe estalla
-		
-		//Crea el assessment con los datos anteriores.
-		
-		
+		Object assessmentWp = assessmentWordPressHelper.getAssessment( DateFormatUtils.format( birthdate , "yyyy-MM-dd"), level );
+		if( assessmentWp == null ) throw new Exception( "No fue posible realizar la consulta al WordPress desde createAssessment" );
+
+        Date date = new Date();
+
+		Assessment assessment = new Assessment();
+		assessment.setCourse( program );
+		assessment.setAssessments( String.valueOf( assessmentWp ) );
+		assessment.setQuestionsStepper( null ); //VACIO MIENTRAS TANTO!
+		assessment.setRemainingTime( 0 );
+		assessment.setCreateAt( date );
+		assessment.setUpdateAt( null );
+		assessment.setProgram( program );
+		assessment.setHeadquarter( headquarter );
+		assessment.setAssessmentStatus( null );
+//		assessment.setProspective( isProspective );
+
 //		return ResponseEntity.status( HttpStatus.CREATED ).body( assessmentService.save( assessment ) );
 		return null;
 	};
