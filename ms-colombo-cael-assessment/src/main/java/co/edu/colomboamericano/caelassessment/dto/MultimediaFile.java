@@ -1,5 +1,7 @@
 package co.edu.colomboamericano.caelassessment.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.Data;
 
 /**
@@ -10,8 +12,13 @@ import lombok.Data;
 @Data
 public class MultimediaFile {
 
+	@JsonProperty(value = "type")
 	private String type;
+	
+	@JsonProperty(value = "multimedia")
 	private String multimedia;
+	
+	@JsonProperty(value = "author")
 	private String author;
 
 }

@@ -12,7 +12,7 @@ import lombok.Data;
 @Data
 public class Question {
 
-	private int iD;
+	private int ID;
 	private String score;
 	private String statement;
 	private Object question;

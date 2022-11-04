@@ -18,15 +18,19 @@ import org.springframework.transaction.annotation.Transactional;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 
+import co.edu.colomboamericano.caelassessment.dto.CompleteDraggable;
 import co.edu.colomboamericano.caelassessment.dto.CorrectOrderDraggable;
 import co.edu.colomboamericano.caelassessment.dto.CurrentQuestion;
 import co.edu.colomboamericano.caelassessment.dto.GenericQuestion;
+import co.edu.colomboamericano.caelassessment.dto.PairingDraggable;
 import co.edu.colomboamericano.caelassessment.dto.Question;
 import co.edu.colomboamericano.caelassessment.dto.QuestionStepper;
 import co.edu.colomboamericano.caelassessment.dto.QuestionType;
 import co.edu.colomboamericano.caelassessment.dto.QuestionsGroup;
 import co.edu.colomboamericano.caelassessment.dto.Root;
+import co.edu.colomboamericano.caelassessment.dto.SelectDraggable;
 import co.edu.colomboamericano.caelassessment.dto.SelectSingleAnswer;
+import co.edu.colomboamericano.caelassessment.dto.Writing;
 import co.edu.colomboamericano.caelassessment.entity.Assessment;
 import co.edu.colomboamericano.caelassessment.entity.AssessmentStatus;
 import co.edu.colomboamericano.caelassessment.entity.Prospective;
@@ -185,14 +189,17 @@ public class AssessmentServiceImp implements AssessmentService
 	@Override
 	public Object transformAssessmentsAndQuestionStepper(Integer id) throws Exception {
 		List<Object> resultQuery = assessmentRepositoryCustom.getAssementAndQuestionsStepper(id);
+		if (resultQuery.size() <= 0 || resultQuery.get(0) == null) {
+			return null;
+		}
+		
 		List<Root> root = new ArrayList<Root>();
 		Type collectionType  =  new TypeToken<List<Root>>() {}.getType();
 		QuestionStepper questionStepper = new QuestionStepper();
+		
 		 for (Iterator iterator = resultQuery.iterator(); iterator.hasNext();) {
 			 Object[] object = (Object[]) iterator.next();
-				if (String.valueOf(object[0]).equals("null")) {
-					return null;
-				}
+				
 				root = gson.fromJson(String.valueOf(object[0]), collectionType);
 				questionStepper = gson.fromJson(String.valueOf(object[1]), QuestionStepper.class);	
 		}
@@ -238,18 +245,43 @@ public class AssessmentServiceImp implements AssessmentService
 	}
 	
 	public Object transformQuestion(String typeName,Question question) {
-		SelectSingleAnswer selectSingleAnswer = new SelectSingleAnswer();
-		CorrectOrderDraggable correctOrderDraggable = new CorrectOrderDraggable();
 		String resultTypeName = putFirsLetterInUppercase(typeName);
 		
 		if (SelectSingleAnswer.class.getSimpleName().equals(resultTypeName)) {
+			SelectSingleAnswer selectSingleAnswer = new SelectSingleAnswer();
 			selectSingleAnswer.setQuestion(question);
 			return selectSingleAnswer;
 		} 
 		
+		if (SelectDraggable.class.getSimpleName().equals(resultTypeName)) {
+			SelectDraggable selectDraggable = new SelectDraggable();
+			selectDraggable.setQuestion(question);
+			return selectDraggable;
+		}
+		
+		if (CompleteDraggable.class.getSimpleName().equals(resultTypeName)) {
+			CompleteDraggable completeDraggable = new CompleteDraggable();
+			completeDraggable.setQuestion(question);
+			return completeDraggable;
+		}
+				
+		if (PairingDraggable.class.getSimpleName().equals(resultTypeName)) {
+			PairingDraggable pairingDraggable = new PairingDraggable();
+			pairingDraggable.setQuestion(question);
+			return pairingDraggable;
+		}
+		
+		
 		if(CorrectOrderDraggable.class.getSimpleName().equals(resultTypeName)) {
+			CorrectOrderDraggable correctOrderDraggable = new CorrectOrderDraggable();
 			correctOrderDraggable.setQuestion(question);
 			return correctOrderDraggable;
+		}
+		
+		if (Writing.class.getSimpleName().equals(resultTypeName)) {
+			Writing writing = new Writing();
+			writing.setQuestion(question);
+			return writing;
 		}
 	
 		return null;
