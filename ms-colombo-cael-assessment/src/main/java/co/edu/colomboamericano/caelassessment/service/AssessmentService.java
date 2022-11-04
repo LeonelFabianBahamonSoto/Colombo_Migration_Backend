@@ -14,4 +14,6 @@ public interface AssessmentService extends GenericService<Assessment, Integer>
 	Assessment generateDtoAssessmentByStatusAndProspective(Integer prospectiveId,Integer assessmentStatusId) throws Exception ;
 
 	Object transformAssessmentsAndQuestionStepper(Integer id) throws Exception;
+	
+	Object getAssessmentQuestion(Integer id)throws Exception; 
 }

@@ -22,6 +22,7 @@ import co.edu.colomboamericano.caelassessment.dto.CompleteDraggable;
 import co.edu.colomboamericano.caelassessment.dto.CorrectOrderDraggable;
 import co.edu.colomboamericano.caelassessment.dto.CurrentQuestion;
 import co.edu.colomboamericano.caelassessment.dto.GenericQuestion;
+import co.edu.colomboamericano.caelassessment.dto.OrderSentences;
 import co.edu.colomboamericano.caelassessment.dto.PairingDraggable;
 import co.edu.colomboamericano.caelassessment.dto.Question;
 import co.edu.colomboamericano.caelassessment.dto.QuestionStepper;
@@ -196,14 +197,15 @@ public class AssessmentServiceImp implements AssessmentService
 		List<Root> root = new ArrayList<Root>();
 		Type collectionType  =  new TypeToken<List<Root>>() {}.getType();
 		QuestionStepper questionStepper = new QuestionStepper();
-		
+		Integer idAssessment = 0;
 		 for (Iterator iterator = resultQuery.iterator(); iterator.hasNext();) {
 			 Object[] object = (Object[]) iterator.next();
 				
 				root = gson.fromJson(String.valueOf(object[0]), collectionType);
-				questionStepper = gson.fromJson(String.valueOf(object[1]), QuestionStepper.class);	
+				questionStepper = gson.fromJson(String.valueOf(object[1]), QuestionStepper.class);
+				idAssessment = Integer.parseInt(String.valueOf(object[2]));
 		}
-		 Object resultGenerate = generateCurrentCuestion(root,questionStepper);
+		 Object resultGenerate = generateCurrentCuestion(root,questionStepper,idAssessment);
 		 return resultGenerate;
 	}
 	
@@ -211,10 +213,11 @@ public class AssessmentServiceImp implements AssessmentService
 	/*
 	 * generar un CurrentQuestion basado en el questionStepper
 	 */
-	public Object generateCurrentCuestion(List<Root> roots,QuestionStepper questionStepper ) {
+	public Object generateCurrentCuestion(List<Root> roots,QuestionStepper questionStepper,Integer idAssessment ) {
 		Root root = getLastIndexAssessments(roots);
 		CurrentQuestion currentQuestion = new CurrentQuestion();
 		Question question = new Question();
+		currentQuestion.setAssessmentId(idAssessment);
 		currentQuestion.setQuestionGroupId(root.getQuestionsGroup().get(questionStepper.getQuestionGroupIndex()).getQuestionGroupId());
 		currentQuestion.setTitle(root.getQuestionsGroup().get(questionStepper.getQuestionGroupIndex()).getTitle());
 		currentQuestion.setQuestionTypeId(root.getQuestionsGroup().get(questionStepper.getQuestionGroupIndex())
@@ -231,6 +234,7 @@ public class AssessmentServiceImp implements AssessmentService
 		.get(questionStepper.getQuestionIndex());
 		Object resultTrasnformQuestion= transformQuestion(currentQuestion.getTypeName(),question);
 		currentQuestion.setQuestion(resultTrasnformQuestion);
+
 		return currentQuestion;
 	}
 	
@@ -244,46 +248,105 @@ public class AssessmentServiceImp implements AssessmentService
 		return root;
 	}
 	
+	/**
+	 * Gets transformar una pregunta al tipo SelectSingleAnswer,
+	 * SelectDraggable, CompleteDraggable, PairingDraggable,
+	 * CorrectOrderDraggable, Writing, OrderSentences de acuerdo al tipo
+	 * questionTypes de typeName
+	 * @param tipo de nombre 'typeName', la pregunta 'question'
+	 * @return la pregunta segun su tipo
+	 */
 	public Object transformQuestion(String typeName,Question question) {
 		String resultTypeName = putFirsLetterInUppercase(typeName);
 		
 		if (SelectSingleAnswer.class.getSimpleName().equals(resultTypeName)) {
+			List<String> answers = new ArrayList<String>();
 			SelectSingleAnswer selectSingleAnswer = new SelectSingleAnswer();
-			selectSingleAnswer.setQuestion(question);
+			selectSingleAnswer.setID(question.getID());
+			selectSingleAnswer.setScore(question.getScore());
+			selectSingleAnswer.setQuestion(question.getQuestion());
+			question.getAnswers().forEach(answer ->{
+				answers.add(answer.getAnswer().trim());
+				selectSingleAnswer.setAnswers(answers);
+			});
+			selectSingleAnswer.setAnswered(question.isAnswered());
 			return selectSingleAnswer;
 		} 
 		
 		if (SelectDraggable.class.getSimpleName().equals(resultTypeName)) {
 			SelectDraggable selectDraggable = new SelectDraggable();
-			selectDraggable.setQuestion(question);
+			List<String> answers = new ArrayList<String>();
+			selectDraggable.setID(question.getID());
+			selectDraggable.setScore(question.getScore());
+			selectDraggable.setQuestion(question.getQuestion());
+			question.getAnswers().forEach(answer ->{
+				answers.add(answer.getAnswer().trim());
+				selectDraggable.setAnswers(answers);
+			});
+			selectDraggable.setAnswered(question.isAnswered());
 			return selectDraggable;
 		}
 		
 		if (CompleteDraggable.class.getSimpleName().equals(resultTypeName)) {
 			CompleteDraggable completeDraggable = new CompleteDraggable();
-			completeDraggable.setQuestion(question);
+			List<String> answers = new ArrayList<String>();
+			completeDraggable.setID(question.getID());
+			completeDraggable.setScore(question.getScore());
+			completeDraggable.setStatement(question.getStatement());
+			completeDraggable.setQuestion(question.getQuestion());
+			question.getAnswers().forEach(answer ->{
+				answers.add(answer.getAnswer().trim());
+				completeDraggable.setAnswers(answers);
+			});
+			completeDraggable.setAnswered(question.isAnswered());
 			return completeDraggable;
 		}
 				
 		if (PairingDraggable.class.getSimpleName().equals(resultTypeName)) {
 			PairingDraggable pairingDraggable = new PairingDraggable();
-			pairingDraggable.setQuestion(question);
+			List<String> answers = new ArrayList<String>();
+			pairingDraggable.setID(question.getID());
+			pairingDraggable.setScore(question.getScore());
+			pairingDraggable.setQuestion(question.getQuestion());
+			question.getAnswers().forEach(answer ->{
+				answers.add(answer.getAnswer().trim());
+				pairingDraggable.setAnswers(answers);
+			});
+			pairingDraggable.setAnswered(question.isAnswered());
 			return pairingDraggable;
 		}
 		
 		
 		if(CorrectOrderDraggable.class.getSimpleName().equals(resultTypeName)) {
 			CorrectOrderDraggable correctOrderDraggable = new CorrectOrderDraggable();
-			correctOrderDraggable.setQuestion(question);
+			correctOrderDraggable.setID(question.getID());
+			correctOrderDraggable.setScore(question.getScore());
+			correctOrderDraggable.setStatement(question.getStatement());
+			correctOrderDraggable.setQuestion(question.getQuestion());
 			return correctOrderDraggable;
 		}
 		
 		if (Writing.class.getSimpleName().equals(resultTypeName)) {
 			Writing writing = new Writing();
-			writing.setQuestion(question);
+			writing.setID(question.getID());
+			writing.setScore(question.getScore());
+			writing.setQuestion(question.getQuestion());
+			writing.setAnswered(question.isAnswered());
 			return writing;
 		}
 	
+		if (OrderSentences.class.getSimpleName().equals(resultTypeName)) {
+			OrderSentences orderSentences = new OrderSentences();
+			List<String> sentences = new ArrayList<String>();
+			orderSentences.setID(question.getID());
+			orderSentences.setScore(question.getScore());
+			question.getSentences().forEach(sentence ->{
+				sentences.add(sentence.getSentence().trim());
+				orderSentences.setSentences(sentences);
+			});
+			orderSentences.setAnswered(question.isAnswered());
+			return orderSentences;
+		}
 		return null;
 	}
 	
@@ -293,6 +356,12 @@ public class AssessmentServiceImp implements AssessmentService
 	        return typeName;
 	    }
 		String result = typeName.substring(0,1).toUpperCase()+typeName.substring(1);
+		return result;
+	}
+
+	@Override
+	public Object getAssessmentQuestion(Integer id) throws Exception {
+		Object result = transformAssessmentsAndQuestionStepper(id);
 		return result;
 	}
 

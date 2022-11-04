@@ -3,6 +3,7 @@ package co.edu.colomboamericano.caelassessment.dto;
 import lombok.Data;
 
 @Data
-public class Writing extends QuestionPropertysExtend {
-	private Object question;
+public class Sentence {
+
+	private String sentence;
 }

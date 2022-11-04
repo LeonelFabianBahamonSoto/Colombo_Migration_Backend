@@ -173,10 +173,10 @@ public class AssessmentController
 //	 * @return levels.
 //	 * @throws Exception
 //	 */
-	@GetMapping("/getAssessmentQuestion")
-	public ResponseEntity<?> getAssessmentQuestion( @RequestParam Integer id ) throws Exception
+	@GetMapping("/getAssessmentQuestion/{id}")
+	public ResponseEntity<?> getAssessmentQuestion( @PathVariable("id") Integer id ) throws Exception
 	{
-		Object result = assessmentService.transformAssessmentsAndQuestionStepper(id);
+		Object result = assessmentService.getAssessmentQuestion(id);
 		if (result == null) {
 			throw new ModeloNotFoundException("id assessment doesn't exist");
 		}

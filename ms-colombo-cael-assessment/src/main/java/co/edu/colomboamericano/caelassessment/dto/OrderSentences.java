@@ -1,9 +1,10 @@
 package co.edu.colomboamericano.caelassessment.dto;
 
-public class OrderSentences {
+import java.util.List;
 
-	public OrderSentences() {
-		// TODO Auto-generated constructor stub
-	}
+import lombok.Data;
 
+@Data
+public class OrderSentences extends QuestionPropertysExtend{
+	private List<String> sentences;
 }
