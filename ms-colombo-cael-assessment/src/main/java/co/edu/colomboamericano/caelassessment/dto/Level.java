@@ -1,5 +1,7 @@
 package co.edu.colomboamericano.caelassessment.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.Data;
 
 /**
@@ -9,6 +11,10 @@ import lombok.Data;
   */
 @Data
 public class Level {
+	
+	@JsonProperty(value = "slug")
 	private String slug;
+	
+	@JsonProperty(value = "image")
 	private String image;
 }

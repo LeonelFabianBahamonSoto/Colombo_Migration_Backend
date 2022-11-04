@@ -166,14 +166,11 @@ public class AssessmentController
 	@GetMapping("/getAssessmentQuestion")
 	public ResponseEntity<?> getAssessmentQuestion( @RequestParam Integer id ) throws Exception
 	{
-		/*
-		Gson gson = new Gson();
-		String resultQuery = assessmentRepository.getAssessmentQuestion(id);
-	
-		Type collectionType  =  new TypeToken<List<Root>>() {}.getType();
-		List<Root> root = gson.fromJson(resultQuery, collectionType);*/
-		//CurrentQuestion currentQuestion = assessmentService.getCurrentCuestion(id);
-		return new ResponseEntity<>(assessmentService.transformAssessmentsAndQuestionStepper(id),HttpStatus.OK);
+		Object result = assessmentService.transformAssessmentsAndQuestionStepper(id);
+		if (result == null) {
+			throw new ModeloNotFoundException("id assessment doesn't exist");
+		}
+		return new ResponseEntity<>(result,HttpStatus.OK);
 	};
 	
 //	/**

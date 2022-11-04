@@ -4,10 +4,10 @@ import lombok.Data;
 
 @Data
 public class CurrentQuestion {
-	private Integer assessmentId;
-	private Integer questionGroupId;
-	private Integer questionTypeId;
-	private Integer questionId;
+	private int assessmentId;
+	private int questionGroupId;
+	private int questionTypeId;
+	private int questionId;
 	private String title;
 	private String typeName;
 	private Object multimediaFile;
