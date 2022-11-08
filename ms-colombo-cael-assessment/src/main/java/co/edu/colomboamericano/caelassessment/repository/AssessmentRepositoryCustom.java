@@ -43,7 +43,7 @@ public class AssessmentRepositoryCustom {
 	@SuppressWarnings("unchecked")
 	public List<Object>  getAssementAndQuestionsStepper(Integer id) throws Exception {
 		List<Object> resultQuery = new ArrayList<>();
-		resultQuery = entityManager.createNativeQuery("select assessments ,questionsStepper from assessment where id = ?")
+		resultQuery = entityManager.createNativeQuery("select assessments ,questionsStepper,id from assessment where id = ?")
 				.setParameter(1, id)
 				.getResultList();
 		return resultQuery;

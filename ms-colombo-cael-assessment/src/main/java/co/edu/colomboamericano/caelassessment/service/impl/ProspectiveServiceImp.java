@@ -97,7 +97,7 @@ public class ProspectiveServiceImp implements ProspectiveService
 	{		
 		Optional<Prospective> prospective = prospectiveRepository.findByDocumentNumber( documentNumber );
 		
-		if( prospective.isEmpty() ) {
+		if(!prospective.isPresent()) {
 			log.warn("No fue posible encontrar el el cliente por el numero de documento");
 			return null;
 		};
