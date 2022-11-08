@@ -4,7 +4,7 @@ import java.util.Optional;
 
 public interface GenericService<T, ID>
 {
-	Optional<T> findById(ID id);
+	Optional<T> findById(ID id) throws Exception;
 	
 	T save(T entity) throws Exception;
 	

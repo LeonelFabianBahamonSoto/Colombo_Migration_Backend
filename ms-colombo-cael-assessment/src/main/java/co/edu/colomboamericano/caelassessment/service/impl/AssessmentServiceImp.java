@@ -6,27 +6,29 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
+import org.apache.commons.lang.time.DateFormatUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 
+import co.edu.colomboamericano.caelassessment.dto.AssessmentDto;
 import co.edu.colomboamericano.caelassessment.dto.CompleteDraggable;
 import co.edu.colomboamericano.caelassessment.dto.CorrectOrderDraggable;
 import co.edu.colomboamericano.caelassessment.dto.CurrentQuestion;
-import co.edu.colomboamericano.caelassessment.dto.GenericQuestion;
 import co.edu.colomboamericano.caelassessment.dto.PairingDraggable;
+import co.edu.colomboamericano.caelassessment.dto.ProspectiveDto;
 import co.edu.colomboamericano.caelassessment.dto.Question;
 import co.edu.colomboamericano.caelassessment.dto.QuestionStepper;
-import co.edu.colomboamericano.caelassessment.dto.QuestionType;
-import co.edu.colomboamericano.caelassessment.dto.QuestionsGroup;
 import co.edu.colomboamericano.caelassessment.dto.Root;
 import co.edu.colomboamericano.caelassessment.dto.SelectDraggable;
 import co.edu.colomboamericano.caelassessment.dto.SelectSingleAnswer;
@@ -34,45 +36,72 @@ import co.edu.colomboamericano.caelassessment.dto.Writing;
 import co.edu.colomboamericano.caelassessment.entity.Assessment;
 import co.edu.colomboamericano.caelassessment.entity.AssessmentStatus;
 import co.edu.colomboamericano.caelassessment.entity.Prospective;
+import co.edu.colomboamericano.caelassessment.mapper.AssessmentMapper;
 import co.edu.colomboamericano.caelassessment.repository.AssessmentRepository;
 import co.edu.colomboamericano.caelassessment.repository.AssessmentRepositoryCustom;
 import co.edu.colomboamericano.caelassessment.service.AssessmentService;
+import co.edu.colomboamericano.caelassessment.service.ProspectiveService;
+import co.edu.colomboamericano.caelassessment.utils.AssessmentWordPressHelper;
 
 @Service
 @Scope("singleton")
 public class AssessmentServiceImp implements AssessmentService
 {
 	@Autowired
-	AssessmentRepository assessmentRepositrory;
+	private AssessmentRepository assessmentRepositrory;
 	
 	@Autowired
 	private AssessmentRepositoryCustom assessmentRepositoryCustom;
 	
 	@Autowired
+	private AssessmentMapper assessmentMapper;
+	
+	@Autowired
 	private AssessmentRepository assessmentRepository;
 	
+	@Autowired
+	private AssessmentWordPressHelper assessmentWordPressHelper;
+	
+	@Autowired
+	private ProspectiveService prospectiveService;
+	
 	private Gson gson = new Gson();
+
 	/**
-	 * @param Numero documento 'documentNumber', tipo del documento 'documentType', nivel 'level',
-	 * programa 'program', sede 'headquarter', fecha nacimiento 'birthdate'.
+	 * @param Numero documento 'documentNumber', tipo del documento 'documentType', nivel 'level', programa 'program', sede 'headquarter', fecha nacimiento 'birthdate'.
 	 * @return Assessment created.
-	 * @throws Exception: Si el prospective no existe.
+	 * @throws If the person is not in the prospective table or is already registered in the assessment table.
 	 */
 	@Override
-	public Assessment save(Assessment entity) throws Exception
+	@Transactional( readOnly = false, propagation = Propagation.REQUIRED, rollbackFor = Exception.class )
+	public AssessmentDto createAssessment( Integer documentType, Long documentNumber, Date birthdate, String level, String program, String headquarter ) throws Exception
 	{
-//		ArrayList<String> miJsonArray = new ArrayList<>();
+		ProspectiveDto prospective = prospectiveService.findByDocumentNumber( documentNumber );
+		if( prospective == null ) throw new Exception( "La persona con numero de documento " + documentNumber + " no se encuentra registrado en la tabla prospectives" );
 
-		//Consulta el prospective si no existe lanza exception (Espera a la DB)
-		// ???? es el prospective que crea un paso anterior a este EVALUAR!
+		Optional<Assessment> isProspectiveInAssessment = findByProspectiveId( prospective.getId() );
+		if( isProspectiveInAssessment.isPresent() ) throw new Exception( "La persona ya esta registrada" );
+
+		String assessmentWp = assessmentWordPressHelper.getAssessment( DateFormatUtils.format( birthdate , "yyyy-MM-dd"), level );
+
+        Date date = new Date();
+		AssessmentDto assessment = new AssessmentDto();
+		assessment.setCourse( program );
+		assessment.setAssessments( assessmentWp );
+		assessment.setQuestionsStepper( "" );
+		assessment.setRemainingTime( 0 );
+		assessment.setCreateAt( date );
+		assessment.setUpdateAt( date );
+		assessment.setProgram( program );
+		assessment.setHeadquarter( headquarter );
+		assessment.setAssessmentStatusId( 1 );
+		assessment.setProspectiveId( prospective.getId() );
 		
-		//Consulta el assessmentConfig ese cuando se crea?????
-		
-		//CREA EL ASSESSMENT CON EL PROSPECTIVE Y EL ASSESSMENTCONFIG.
-		
-		// TODO Auto-generated method stub
-		return null;
-	}
+		Assessment newAssessment = assessmentMapper.assessmentDtoToAssessment( assessment );
+		assessmentRepository.save( newAssessment );
+
+		return assessment;
+	};
 	
 	/**
 	 * @param Numero documento 'documentNumber', tipo del documento 'documentType', estado del assessment 'ssessmentStatus'.
@@ -107,8 +136,8 @@ public class AssessmentServiceImp implements AssessmentService
 
 	@Override
 	public Optional<Assessment> findById(Integer id) {
-		return assessmentRepositrory.findById(id);
-	}	
+		return assessmentRepositrory.findById( id );
+	};
 
 	@Override
 	public Assessment update(Assessment entity) throws Exception {
@@ -294,6 +323,12 @@ public class AssessmentServiceImp implements AssessmentService
 	    }
 		String result = typeName.substring(0,1).toUpperCase()+typeName.substring(1);
 		return result;
+	}
+
+	@Override
+	public Assessment save(Assessment entity) throws Exception {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

@@ -17,7 +17,6 @@ public interface AssessmentRepository extends JpaRepository<Assessment, Integer>
 //			+ "AND documentType= :documentType AND assessmentStatus= : assessmentStatus) THEN 1 ELSE 0 END", nativeQuery = true)
 //	Integer findByDocumentNumberAndDocumentTypeAndAssessmentStatus( String documentNumber, String documentType, String assessmentStatus );
 
-	@Query(value = "SELECT assessmentStatusId FROM assessment WHERE prospectiveId  = :prospectiveId", nativeQuery = true)
 	Optional<Assessment> findByProspectiveId( Integer prospectiveId );
 	
 	@Query(value = "SELECT * FROM miniveldeingles.assessment limit 10", nativeQuery = true)

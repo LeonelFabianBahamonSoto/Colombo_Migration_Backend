@@ -1,5 +1,6 @@
 package co.edu.colomboamericano.caelassessment.dto;
 
+import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.Date;
 
@@ -14,8 +15,10 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ProspectiveDto
-{	
+public class ProspectiveDto implements Serializable
+{
+    private Integer id;
+
 	@Size( min= 1, max=255, message = "El nombre del estudiante debe tener entre 1 a 255 caracteres")
 	@NotNull(message = "El nombre del estudiante no puede ser nulo")
     private String firstName;
@@ -61,4 +64,6 @@ public class ProspectiveDto
 
 	@NotNull(message = "El categoria del prospective no puede ser nula" )
     private Integer prospectiveStatusId;
+	
+	private static final long serialVersionUID = 1L;
 }

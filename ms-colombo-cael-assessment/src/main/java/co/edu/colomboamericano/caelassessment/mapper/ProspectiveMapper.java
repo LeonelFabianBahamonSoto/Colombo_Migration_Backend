@@ -12,12 +12,12 @@ import co.edu.colomboamericano.caelassessment.entity.Prospective;
 public interface ProspectiveMapper
 {
 	@Mapping( source="prospectiveStatusId.id", target="prospectiveStatusId"  )
-	public ProspectiveDto prospectiveToProspectiveDto( Prospective prospective );
+	ProspectiveDto prospectiveToProspectiveDto( Prospective prospective );
 
 	@Mapping( target="prospectiveStatusId.id", source="prospectiveStatusId"  )
-	public Prospective prospectiveDtoToProspective( ProspectiveDto prospectiveDto );
+	Prospective prospectiveDtoToProspective( ProspectiveDto prospectiveDto );
 	
-	public List<ProspectiveDto> prospectiveListToProspectiveDtoList( List<Prospective> prospectives );
+	List<ProspectiveDto> prospectiveListToProspectiveDtoList( List<Prospective> prospectives );
 	
-	public List<Prospective> prospectiveDtoListToProspectiveList( List<ProspectiveDto> prospectivesDto );
+	List<Prospective> prospectiveDtoListToProspectiveList( List<ProspectiveDto> prospectivesDto );
 }
