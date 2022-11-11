@@ -7,6 +7,7 @@ import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import co.edu.colomboamericano.caelassessment.dto.FindByFilterDto;
@@ -52,4 +53,7 @@ public interface ProspectiveRepository extends JpaRepository<Prospective, Intege
 			+ " INNER JOIN miniveldeingles.assessmentStatus ON assessmentQuery.assessmentStatusId = assessmentStatus.id WHERE assessmentQuery.updatedAt"
 			+ " BETWEEN ?1 AND ?2 ORDER BY assessmentQuery.UpdatedAt DESC", nativeQuery = true)
 	List<ProspectiveByDateRangeStateFilterDto> findByDateRangeFilterAndStateQuery( Date startDate, Date endDate );
+	
+	@Query(value = "SELECT id FROM Prospective WHERE documentNumber = :documentNumber AND documentType = :documentType")
+	Long findIdByDocumentAndType(@Param("documentNumber")Long documentNumber, @Param("documentType")Integer documentType);
 }

@@ -6,7 +6,10 @@ import lombok.Data;
 
 @Data
 public class CurrentQuestion {
-	private int assessmentId;
+	
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private Integer assessmentId;
+	
 	private int questionGroupId;
 	private int questionTypeId;
 	private int questionId;

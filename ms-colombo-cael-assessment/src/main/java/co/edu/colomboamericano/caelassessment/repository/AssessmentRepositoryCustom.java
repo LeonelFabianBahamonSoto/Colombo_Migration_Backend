@@ -19,22 +19,23 @@ public class AssessmentRepositoryCustom {
 	 * Gets an assessment given a prospective and status.
 	 */
 	@SuppressWarnings("unchecked")
-	public List<Object> getAssesment(Integer prospectiveId,Integer assessmentStatusId) throws Exception {
+	public List<Object> getAssesments(Long idProspective, Integer assessmentStatusId) throws Exception {
 		List<Object> resultQuery = new ArrayList<>();
 		StringBuilder buildQuery = new StringBuilder();
-		buildQuery.append("SELECT a.id, a.course, a.assessments, a.questionsStepper, a.remainingTime,");
-		buildQuery.append("a.assessmentStatusId, a.prospectiveId, a.createdAt, a.updatedAt,");
-		buildQuery.append("a.program, a.headquarter, p.id as idProspective, p.firstName ,");
-		buildQuery.append("p.secondName, p.surname, p.secondSurname , p.documentNumber,");
-		buildQuery.append("p.birthdate, p.email, p.cellphone, p.schoolGrade, p.termsConditions,");
-		buildQuery.append("p.prospectiveStatusId, p.createdAt as createdAtPropective,");
-		buildQuery.append("p.updatedAt as updatedAtPropective, p.documentType , ast.id as idProspectiveStatus,");
-		buildQuery.append("ast.name, ast.key, ast.createdAt as createdAtProspectiveStatus,");
-		buildQuery.append("ast.updatedAt as updatedAtProspectiveStatus ");
-		buildQuery.append("FROM assessment a INNER JOIN prospective p ON p.id = a.prospectiveId INNER JOIN assessmentStatus ast ON ast.id = a.assessmentStatusId  ");
+		buildQuery.append("SELECT a.id as idPropective, a.createdAt , a.updatedAt,");
+		buildQuery.append("a.course , a.remainingTime, a.program , a.headquarter,");
+		buildQuery.append("ass.id as idAssessmentStatus , ass.createdAt as createdAtStatus,");
+		buildQuery.append("ass.updatedAt as updatedAtStatus , ass.name, ass.key,");
+		buildQuery.append("p.prospectiveStatusId , p.id as idProspective,");
+		buildQuery.append("p.createdAt as createdAtProspective , p.updatedAt as updatedAtProspective,");
+		buildQuery.append("p.firstName , p.secondName, p.surname , p.secondSurname,");
+		buildQuery.append("p.documentType, p.documentNumber, p.birthdate, p.email,");
+		buildQuery.append("p.cellphone , p.schoolGrade , p.termsConditions ");
+		buildQuery.append("FROM assessment a INNER JOIN prospective p ON p.id = a.prospectiveId ");
+		buildQuery.append("INNER JOIN assessmentStatus ass ON ass.id = a.assessmentStatusId ");
 		buildQuery.append("WHERE p.id = ? AND a.assessmentStatusId = ?");
 		resultQuery = entityManager.createNativeQuery(buildQuery.toString())
-				.setParameter(1, prospectiveId)
+				.setParameter(1, idProspective)
 				.setParameter(2, assessmentStatusId)
 				.getResultList();
 		return resultQuery;
@@ -48,5 +49,7 @@ public class AssessmentRepositoryCustom {
 				.getResultList();
 		return resultQuery;
 	}
+	
+
 
 }
