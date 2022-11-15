@@ -16,12 +16,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import co.edu.colomboamericano.caelassessment.dto.AssessmentDto;
-import co.edu.colomboamericano.caelassessment.dto.EmailLevelingDto;
 import co.edu.colomboamericano.caelassessment.dto.AssessmentGetDto;
+import co.edu.colomboamericano.caelassessment.dto.EmailLevelingDto;
 import co.edu.colomboamericano.caelassessment.entity.Assessment;
-import co.edu.colomboamericano.caelassessment.entity.Prospective;
 import co.edu.colomboamericano.caelassessment.exception.ModeloNotFoundException;
-import co.edu.colomboamericano.caelassessment.repository.AssessmentRepository;
 import co.edu.colomboamericano.caelassessment.repository.AssessmentRepositoryCustom;
 import co.edu.colomboamericano.caelassessment.repository.ProspectiveRepository;
 import co.edu.colomboamericano.caelassessment.service.AssessmentService;
