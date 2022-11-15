@@ -5,6 +5,9 @@ import java.util.Optional;
 
 import co.edu.colomboamericano.caelassessment.dto.AssessmentDto;
 import co.edu.colomboamericano.caelassessment.entity.Assessment;
+import co.edu.colomboamericano.caelassessment.dto.AssessmentGetDto;
+import co.edu.colomboamericano.caelassessment.dto.Question;
+import co.edu.colomboamericano.caelassessment.dto.questionPreview.QuestionPre;
 
 public interface AssessmentService extends GenericService<Assessment, Integer>
 {
@@ -12,7 +15,7 @@ public interface AssessmentService extends GenericService<Assessment, Integer>
 
 	Optional<Assessment> findByProspectiveId( Integer prospectiveId );
 	
-	Assessment generateDtoAssessmentByStatusAndProspective(Integer prospectiveId,Integer assessmentStatusId) throws Exception ;
+	AssessmentGetDto generateDtoAssessmentByStatusAndProspective(Long prospectiveId, Integer assessmentStatusId) throws Exception ;
 
 	Object transformAssessmentsAndQuestionStepper(Integer id) throws Exception;
 
@@ -21,5 +24,8 @@ public interface AssessmentService extends GenericService<Assessment, Integer>
 	Object getAssessmentQuestion(Integer id)throws Exception;
 
 	AssessmentDto updateAssessmentFieldAssessments( Integer id, String assessmentsObject ) throws Exception ;
+	Object getAssessmentQuestion(Integer id)throws Exception; 
+	
+	Object buildQuestionPreview(Integer groupQuestionsId,Integer groupTypeId,Integer questionId) throws Exception;
 
 }

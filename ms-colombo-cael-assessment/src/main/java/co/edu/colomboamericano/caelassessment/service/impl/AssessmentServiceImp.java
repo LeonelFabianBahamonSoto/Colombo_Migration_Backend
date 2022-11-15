@@ -22,6 +22,7 @@ import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 
 import co.edu.colomboamericano.caelassessment.dto.AssessmentDto;
+import co.edu.colomboamericano.caelassessment.dto.AssessmentGetDto;
 import co.edu.colomboamericano.caelassessment.dto.CompleteDraggable;
 import co.edu.colomboamericano.caelassessment.dto.CorrectOrderDraggable;
 import co.edu.colomboamericano.caelassessment.dto.CurrentQuestion;
@@ -29,12 +30,15 @@ import co.edu.colomboamericano.caelassessment.dto.EmailLevelingDto;
 import co.edu.colomboamericano.caelassessment.dto.OrderSentences;
 import co.edu.colomboamericano.caelassessment.dto.PairingDraggable;
 import co.edu.colomboamericano.caelassessment.dto.ProspectiveDto;
+import co.edu.colomboamericano.caelassessment.dto.ProspectiveGetDto;
 import co.edu.colomboamericano.caelassessment.dto.Question;
 import co.edu.colomboamericano.caelassessment.dto.QuestionStepper;
 import co.edu.colomboamericano.caelassessment.dto.Root;
 import co.edu.colomboamericano.caelassessment.dto.SelectDraggable;
 import co.edu.colomboamericano.caelassessment.dto.SelectSingleAnswer;
 import co.edu.colomboamericano.caelassessment.dto.Writing;
+import co.edu.colomboamericano.caelassessment.dto.questionPreview.QuestionPre;
+import co.edu.colomboamericano.caelassessment.dto.questionPreview.QuestionPreview;
 import co.edu.colomboamericano.caelassessment.entity.Assessment;
 import co.edu.colomboamericano.caelassessment.entity.AssessmentStatus;
 import co.edu.colomboamericano.caelassessment.entity.Prospective;
@@ -45,6 +49,7 @@ import co.edu.colomboamericano.caelassessment.service.AssessmentService;
 import co.edu.colomboamericano.caelassessment.service.AssessmentStatusService;
 import co.edu.colomboamericano.caelassessment.service.MailService;
 import co.edu.colomboamericano.caelassessment.service.ProspectiveService;
+import co.edu.colomboamericano.caelassessment.service.QuestionUtilService;
 import co.edu.colomboamericano.caelassessment.utils.AssessmentWordPressHelper;
 import co.edu.colomboamericano.caelassessment.utils.ProgramsAgeRangesUtils;
 
@@ -69,6 +74,9 @@ public class AssessmentServiceImp implements AssessmentService
 	
 	@Autowired
 	private ProgramsAgeRangesUtils programsAgeRangesUtils;
+
+	@Autowired
+	private QuestionUtilService questionUtilService  ;
 	
 	@Autowired
 	private ProspectiveService prospectiveService;
@@ -194,55 +202,52 @@ public class AssessmentServiceImp implements AssessmentService
 	}
 
 	@Override
-	public Assessment generateDtoAssessmentByStatusAndProspective(Integer prospectiveId,Integer assessmentStatusId) throws Exception {
-		List<Object> resultGetAssessment = assessmentRepositoryCustom.getAssesment(prospectiveId, assessmentStatusId);
-
-		Assessment assessment = new Assessment();
-		 for (Iterator iterator = resultGetAssessment.iterator(); iterator.hasNext();) {
-			 AssessmentStatus assessmentStatus = new AssessmentStatus();
-			 Prospective prospective = new Prospective();
-			Object[] object = (Object[]) iterator.next();
-			if (String.valueOf(object[0]).equals("null")) {
-				return null;
-			}
-			assessment.setId(Integer.parseInt(String.valueOf(object[0])));
-			assessment.setCourse(String.valueOf(object[1]));
-			assessment.setAssessments(String.valueOf(object[2]));
-			assessment.setQuestionsStepper(String.valueOf(object[3]));
-			assessment.setRemainingTime(Integer.parseInt(String.valueOf(object[4])));
-			assessment.setCreateAt(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(String.valueOf(object[7])));
-			assessment.setUpdateAt(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(String.valueOf(object[8])));
-			assessment.setProgram(String.valueOf(object[9]));
-			assessment.setHeadquarter(String.valueOf(object[10]));
-			
-			prospective.setId(Integer.parseInt(String.valueOf(object[11])));
-			prospective.setFirstName(String.valueOf(object[12]));
-			prospective.setSecondName(String.valueOf(object[13]));
-			prospective.setSurname(String.valueOf(object[14]));
-			prospective.setSecondSurname(String.valueOf(object[15]));
-			prospective.setDocumentNumber(Long.parseLong(String.valueOf(object[16])));
-			prospective.setBirthdate(LocalDate.parse(String.valueOf(object[17])));
-			prospective.setEmail(String.valueOf(object[18]));
-			prospective.setCellphone(String.valueOf(object[19]));
-			prospective.setSchoolGrade(Integer.parseInt(String.valueOf(object[20])));
-			prospective.setTermsConditions(Integer.parseInt(String.valueOf(object[21])));
-			prospective.setCreatedAt(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(String.valueOf(object[23])));
-			prospective.setUpdatedAt(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(String.valueOf(object[24])));
-			prospective.setDocumentType(Integer.parseInt(String.valueOf(object[25])));
-			
-			assessmentStatus.setId(Integer.parseInt(String.valueOf(object[5])));
-			assessmentStatus.setName(String.valueOf(object[27]));
-			assessmentStatus.setKey(String.valueOf(object[28]));
-			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.n");
-			assessmentStatus.setCreatedAt(LocalDateTime.parse(String.valueOf(object[29]), formatter));
-			assessmentStatus.setUpdatedAt(LocalDateTime.parse(String.valueOf(object[30]), formatter));
-			assessment.setAssessmentStatus(assessmentStatus);
-			assessment.setProspective(prospective);
-			
-		
-			
+	public AssessmentGetDto generateDtoAssessmentByStatusAndProspective(Long prospectiveId,Integer assessmentStatusId) throws Exception {	
+		AssessmentGetDto assessment = new AssessmentGetDto();
+		List<Object> resultGetAssessment = assessmentRepositoryCustom.getAssesments(prospectiveId, assessmentStatusId);
+		if (resultGetAssessment.size() <= 0 || resultGetAssessment.get(0) == null) {
+			return null;
 		}
-		return assessment;
+		 for (Iterator iterator = resultGetAssessment.iterator(); iterator.hasNext();) {
+			
+			 Object[] object = (Object[]) iterator.next();
+			 assessment.setId(Long.parseLong(String.valueOf(object[0])));
+			 assessment.setCreateAt(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(String.valueOf(object[1])));
+			 assessment.setUpdateAt(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(String.valueOf(object[2])));
+			 assessment.setCourse(String.valueOf(object[3]));
+			 assessment.setRemainingTime(Integer.parseInt(String.valueOf(object[4])));
+			 assessment.setProgram(String.valueOf(object[5]));
+			 assessment.setHeadquarter(String.valueOf(object[6]));
+			 
+			 AssessmentStatus assessmentStatus = new AssessmentStatus();
+			 assessmentStatus.setId(Integer.parseInt(String.valueOf(object[7])));
+			 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.n");
+			 assessmentStatus.setCreatedAt(LocalDateTime.parse(String.valueOf(object[8]), formatter));
+			 assessmentStatus.setUpdatedAt(LocalDateTime.parse(String.valueOf(object[9]), formatter));
+			 assessmentStatus.setName(String.valueOf(object[10]));
+			 assessmentStatus.setKey(String.valueOf(object[11]));
+			 assessment.setAssessmentStatus(assessmentStatus);
+			 
+			 ProspectiveGetDto prospective = new ProspectiveGetDto();
+			 prospective.setProspectiveStatus(Integer.parseInt(String.valueOf(object[12])));
+			 prospective.setId(Long.parseLong(String.valueOf(object[13])));
+			 prospective.setCreatedAt(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(String.valueOf(object[14])));
+			 prospective.setUpdatedAt(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(String.valueOf(object[15])));
+			
+			 prospective.setFirstName(String.valueOf(object[16]));
+			 prospective.setSecondName(String.valueOf(object[17]));
+			 prospective.setSurname(String.valueOf(object[18]));
+			 prospective.setSecondSurname(String.valueOf(object[19]));;
+			 prospective.setDocumentType(Integer.parseInt(String.valueOf(object[20])));
+			 prospective.setDocumentNumber(Long.parseLong(String.valueOf(object[21])));
+			 prospective.setBirthdate(LocalDate.parse(String.valueOf(object[22])));
+			 prospective.setEmail(String.valueOf(object[23]));
+			 prospective.setCellphone(String.valueOf(object[24]));
+			 prospective.setSchoolGrade(Integer.parseInt(String.valueOf(object[25])));
+			 prospective.setTermsConditions(Boolean.parseBoolean(String.valueOf(object[25])));
+			 assessment.setProspective(prospective);
+		 }
+		 	return assessment;
 	}
 
 	
@@ -296,7 +301,7 @@ public class AssessmentServiceImp implements AssessmentService
 		question = root.getQuestionsGroup().get(questionStepper.getQuestionGroupIndex())
 		.getQuestionTypes().get(questionStepper.getQuestionTypeIndex()).getQuestions()
 		.get(questionStepper.getQuestionIndex());
-		Object resultTrasnformQuestion= transformQuestion(currentQuestion.getTypeName(),question);
+		Object resultTrasnformQuestion = questionUtilService.transformQuestion(currentQuestion.getTypeName(),question);
 		currentQuestion.setQuestion(resultTrasnformQuestion);
 
 		return currentQuestion;
@@ -312,116 +317,6 @@ public class AssessmentServiceImp implements AssessmentService
 		return root;
 	}
 	
-	/**
-	 * Gets transformar una pregunta al tipo SelectSingleAnswer,
-	 * SelectDraggable, CompleteDraggable, PairingDraggable,
-	 * CorrectOrderDraggable, Writing, OrderSentences de acuerdo al tipo
-	 * questionTypes de typeName
-	 * @param tipo de nombre 'typeName', la pregunta 'question'
-	 * @return la pregunta segun su tipo
-	 */
-	public Object transformQuestion(String typeName,Question question) {
-		String resultTypeName = putFirsLetterInUppercase(typeName);
-		
-		if (SelectSingleAnswer.class.getSimpleName().equals(resultTypeName)) {
-			List<String> answers = new ArrayList<String>();
-			SelectSingleAnswer selectSingleAnswer = new SelectSingleAnswer();
-			selectSingleAnswer.setID(question.getID());
-			selectSingleAnswer.setScore(question.getScore());
-			selectSingleAnswer.setQuestion(question.getQuestion());
-			question.getAnswers().forEach(answer ->{
-				answers.add(answer.getAnswer().trim());
-				selectSingleAnswer.setAnswers(answers);
-			});
-			selectSingleAnswer.setAnswered(question.isAnswered());
-			return selectSingleAnswer;
-		} 
-		
-		if (SelectDraggable.class.getSimpleName().equals(resultTypeName)) {
-			SelectDraggable selectDraggable = new SelectDraggable();
-			List<String> answers = new ArrayList<String>();
-			selectDraggable.setID(question.getID());
-			selectDraggable.setScore(question.getScore());
-			selectDraggable.setQuestion(question.getQuestion());
-			question.getAnswers().forEach(answer ->{
-				answers.add(answer.getAnswer().trim());
-				selectDraggable.setAnswers(answers);
-			});
-			selectDraggable.setAnswered(question.isAnswered());
-			return selectDraggable;
-		}
-		
-		if (CompleteDraggable.class.getSimpleName().equals(resultTypeName)) {
-			CompleteDraggable completeDraggable = new CompleteDraggable();
-			List<String> answers = new ArrayList<String>();
-			completeDraggable.setID(question.getID());
-			completeDraggable.setScore(question.getScore());
-			completeDraggable.setStatement(question.getStatement());
-			completeDraggable.setQuestion(question.getQuestion());
-			question.getAnswers().forEach(answer ->{
-				answers.add(answer.getAnswer().trim());
-				completeDraggable.setAnswers(answers);
-			});
-			completeDraggable.setAnswered(question.isAnswered());
-			return completeDraggable;
-		}
-				
-		if (PairingDraggable.class.getSimpleName().equals(resultTypeName)) {
-			PairingDraggable pairingDraggable = new PairingDraggable();
-			List<String> answers = new ArrayList<String>();
-			pairingDraggable.setID(question.getID());
-			pairingDraggable.setScore(question.getScore());
-			pairingDraggable.setQuestion(question.getQuestion());
-			question.getAnswers().forEach(answer ->{
-				answers.add(answer.getAnswer().trim());
-				pairingDraggable.setAnswers(answers);
-			});
-			pairingDraggable.setAnswered(question.isAnswered());
-			return pairingDraggable;
-		}
-		
-		
-		if(CorrectOrderDraggable.class.getSimpleName().equals(resultTypeName)) {
-			CorrectOrderDraggable correctOrderDraggable = new CorrectOrderDraggable();
-			correctOrderDraggable.setID(question.getID());
-			correctOrderDraggable.setScore(question.getScore());
-			correctOrderDraggable.setStatement(question.getStatement());
-			correctOrderDraggable.setQuestion(question.getQuestion());
-			return correctOrderDraggable;
-		}
-		
-		if (Writing.class.getSimpleName().equals(resultTypeName)) {
-			Writing writing = new Writing();
-			writing.setID(question.getID());
-			writing.setScore(question.getScore());
-			writing.setQuestion(question.getQuestion());
-			writing.setAnswered(question.isAnswered());
-			return writing;
-		}
-	
-		if (OrderSentences.class.getSimpleName().equals(resultTypeName)) {
-			OrderSentences orderSentences = new OrderSentences();
-			List<String> sentences = new ArrayList<String>();
-			orderSentences.setID(question.getID());
-			orderSentences.setScore(question.getScore());
-			question.getSentences().forEach(sentence ->{
-				sentences.add(sentence.getSentence().trim());
-				orderSentences.setSentences(sentences);
-			});
-			orderSentences.setAnswered(question.isAnswered());
-			return orderSentences;
-		}
-		return null;
-	}
-	
-	
-	public String putFirsLetterInUppercase(String typeName) {
-		if (typeName == null || typeName.isEmpty()) {
-	        return typeName;
-	    }
-		String result = typeName.substring(0,1).toUpperCase()+typeName.substring(1);
-		return result;
-	}
 
 	@Override
 	public Assessment save( Assessment entity ) throws Exception {
@@ -482,5 +377,24 @@ public class AssessmentServiceImp implements AssessmentService
 				return mailService.sendLevelingNotification( emailData );
 		 }
 	};
+
+	@Override
+	public Object buildQuestionPreview(Integer groupQuestionsId, Integer groupTypeId, Integer questionId)
+			throws Exception {
+		
+		QuestionPreview questionPreview = assessmentWordPressHelper.getAssessmentPreview(groupQuestionsId,groupTypeId,questionId);
+		CurrentQuestion currentQuestion = new CurrentQuestion();
+		
+		currentQuestion.setQuestionGroupId(questionPreview.getData().getQuestionsGroup().get(0).getQuestionGroupId());
+		currentQuestion.setQuestionTypeId(Integer.parseInt(questionPreview.getData().getQuestionsGroup().get(0).getQuestionTypes().get(0).getID()));
+		currentQuestion.setQuestionId(Integer.parseInt(questionPreview.getData().getQuestionsGroup().get(0).getQuestionTypes().get(0).getQuestions().get(0).getID()));
+		currentQuestion.setTitle(questionPreview.getData().getQuestionsGroup().get(0).getTitle());
+		currentQuestion.setTypeName(questionPreview.getData().getQuestionsGroup().get(0).getQuestionTypes().get(0).getTypeName());
+		currentQuestion.setMultimediaFile(questionPreview.getData().getQuestionsGroup().get(0).getQuestionTypes().get(0).getMultimediaFile());
+		QuestionPre question = questionPreview.getData().getQuestionsGroup().get(0).getQuestionTypes().get(0).getQuestions().get(0);
+		Object result = questionUtilService.transformQuestion(currentQuestion.getTypeName(),question);
+		currentQuestion.setQuestion(result);
+		return currentQuestion;
+	}
 
 }

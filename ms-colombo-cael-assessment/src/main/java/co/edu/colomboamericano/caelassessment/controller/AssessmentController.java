@@ -17,13 +17,18 @@ import org.springframework.web.bind.annotation.RestController;
 
 import co.edu.colomboamericano.caelassessment.dto.AssessmentDto;
 import co.edu.colomboamericano.caelassessment.dto.EmailLevelingDto;
+import co.edu.colomboamericano.caelassessment.dto.AssessmentGetDto;
 import co.edu.colomboamericano.caelassessment.entity.Assessment;
 import co.edu.colomboamericano.caelassessment.entity.Prospective;
 import co.edu.colomboamericano.caelassessment.exception.ModeloNotFoundException;
+import co.edu.colomboamericano.caelassessment.repository.AssessmentRepository;
+import co.edu.colomboamericano.caelassessment.repository.AssessmentRepositoryCustom;
+import co.edu.colomboamericano.caelassessment.repository.ProspectiveRepository;
 import co.edu.colomboamericano.caelassessment.service.AssessmentService;
 import co.edu.colomboamericano.caelassessment.service.MailService;
 import co.edu.colomboamericano.caelassessment.service.ProspectiveService;
 import co.edu.colomboamericano.caelassessment.service.WordPressService;
+import co.edu.colomboamericano.caelassessment.utils.AssessmentWordPressHelper;
 
 @RestController
 @RequestMapping("/v1/assessment")
@@ -36,10 +41,19 @@ public class AssessmentController
 	private WordPressService wordPressService;
 	
 	@Autowired
+	private AssessmentWordPressHelper assessmentWordPressHelper;
+	
+	@Autowired
 	private ProspectiveService prospectiveService;
 	
 	@Autowired
 	private MailService mailService;
+
+	@Autowired
+	private AssessmentRepositoryCustom assessmentRepositoryCustom;
+	
+	@Autowired
+	private ProspectiveRepository prospectiveRepository;
 
 	/**
 	 * @author Smarthink
@@ -69,21 +83,19 @@ public class AssessmentController
 		if( documentNumber == null || documentType == null ) {
 			throw new Exception("EL numero de docuemnto y el tipo no es valido para la consulta");
 		}
+		Long resultIdProspective = prospectiveRepository.findIdByDocumentAndType(documentNumber, documentType);
 		
-		Prospective prospective = new Prospective();
-		Assessment assessment = new Assessment();
-		prospective = prospectiveService.getFindByDocument(documentType, documentNumber);
-		if (prospective == null) {
+		if (resultIdProspective == null) {
 			throw new ModeloNotFoundException("Prospective doesn't exist");
 		}
-
-		assessment = assessmentService.generateDtoAssessmentByStatusAndProspective(prospective.getId(), prospective.getProspectiveStatusId().getId());
+	
+		AssessmentGetDto assessment = assessmentService.generateDtoAssessmentByStatusAndProspective(resultIdProspective, assessmentStatus.get());
 		if (assessment == null) {
 			throw new ModeloNotFoundException("Assessment not found");
 		}
-		
+			
 		return new ResponseEntity<>(assessment,HttpStatus.OK);
-	};
+	}
 
 	/**
 	 * @param Numero documento 'documentNumber', tipo del documento 'documentType'
@@ -111,11 +123,10 @@ public class AssessmentController
 //	 * @return levels.
 //	 * @throws Exception
 //	 */
-	//Pendiente por probar
 	@GetMapping("/levels")
 	public ResponseEntity<?> getAssessmentLevels() throws Exception
 	{
-		Object result = this.wordPressService.getAssessmentLevels();
+		Object result = assessmentWordPressHelper.getAssessmentLevels();
 		return new ResponseEntity<>(result,HttpStatus.OK);
 	};
 //
@@ -138,10 +149,12 @@ public class AssessmentController
 
 	//pendiente por desestructurar objeto de respuesta del wordpress
 	@GetMapping("/questionPreview")
-	public ResponseEntity<?> getAssessmentQuestionPreview(@RequestParam Integer questionGroupId,
-			@RequestParam Integer questionTypeId,@RequestParam Integer questionId) throws Exception
-	{		
-		Object result = wordPressService.getAssessmentPreview(questionGroupId, questionTypeId, questionId);
+	public ResponseEntity<?> getAssessmentQuestionPreview(@RequestParam Integer groupQuestionsId,
+			@RequestParam Integer groupTypeId,@RequestParam Integer questionId) throws Exception
+	{	
+		//Object result = assessmentWordPressHelper.getAssessmentPreview(groupQuestionsId, groupTypeId, questionId);
+		Object result = assessmentService.buildQuestionPreview(groupQuestionsId, groupTypeId, questionId);
+		//Object result = wordPressService.getAssessmentPreview(groupQuestionsId, groupTypeId, questionId);
 		return new ResponseEntity<>(result,HttpStatus.OK);
 	}
 

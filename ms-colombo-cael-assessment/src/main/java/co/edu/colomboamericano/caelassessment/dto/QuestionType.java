@@ -1,7 +1,7 @@
 package co.edu.colomboamericano.caelassessment.dto;
 
-import java.util.ArrayList;
-
+import java.util.List;
+import co.edu.colomboamericano.caelassessment.dto.Question;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.Data;
@@ -21,7 +21,7 @@ public class QuestionType {
 	private String typeName;
 	
 	@JsonProperty(value = "questions")
-	private ArrayList<Question> questions;
+	private List<Question> questions;
 	
 	@JsonProperty(value = "multimediaFile")
 	private MultimediaFile multimediaFile;
