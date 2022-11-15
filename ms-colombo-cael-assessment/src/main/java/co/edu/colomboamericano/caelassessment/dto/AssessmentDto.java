@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class AssessmentDto implements Serializable
 {
-	private int id;
+	private Integer id;
 
 	private String course;
 	

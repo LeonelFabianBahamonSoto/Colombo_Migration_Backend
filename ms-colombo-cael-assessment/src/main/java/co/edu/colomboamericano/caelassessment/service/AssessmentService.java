@@ -18,5 +18,8 @@ public interface AssessmentService extends GenericService<Assessment, Integer>
 
 	AssessmentDto createAssessment(Integer documentType, Long documentNumber, Date birthdate, String level, String program, String headquarter) throws Exception;
 	
-	Object getAssessmentQuestion(Integer id)throws Exception; 
+	Object getAssessmentQuestion(Integer id)throws Exception;
+
+	AssessmentDto updateAssessmentFieldAssessments( Integer id, String assessmentsObject ) throws Exception ;
+
 }

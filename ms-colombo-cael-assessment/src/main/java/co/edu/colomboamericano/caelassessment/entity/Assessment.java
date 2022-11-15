@@ -11,7 +11,6 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -30,7 +29,7 @@ public class Assessment implements Serializable
 	@Id
 	@GeneratedValue( strategy=GenerationType.IDENTITY )
     @Column(name = "id")
-	private int id;
+	private Integer id;
 	
 	@Size( min= 1, max=255, message = "El nombre del curso debe tener entre 1 a 255 caracteres")
     @Column(name = "course")

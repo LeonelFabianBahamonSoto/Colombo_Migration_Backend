@@ -25,7 +25,7 @@ import co.edu.colomboamericano.caelassessment.dto.AssessmentDto;
 import co.edu.colomboamericano.caelassessment.dto.CompleteDraggable;
 import co.edu.colomboamericano.caelassessment.dto.CorrectOrderDraggable;
 import co.edu.colomboamericano.caelassessment.dto.CurrentQuestion;
-import co.edu.colomboamericano.caelassessment.dto.GenericQuestion;
+import co.edu.colomboamericano.caelassessment.dto.EmailLevelingDto;
 import co.edu.colomboamericano.caelassessment.dto.OrderSentences;
 import co.edu.colomboamericano.caelassessment.dto.PairingDraggable;
 import co.edu.colomboamericano.caelassessment.dto.ProspectiveDto;
@@ -42,8 +42,11 @@ import co.edu.colomboamericano.caelassessment.mapper.AssessmentMapper;
 import co.edu.colomboamericano.caelassessment.repository.AssessmentRepository;
 import co.edu.colomboamericano.caelassessment.repository.AssessmentRepositoryCustom;
 import co.edu.colomboamericano.caelassessment.service.AssessmentService;
+import co.edu.colomboamericano.caelassessment.service.AssessmentStatusService;
+import co.edu.colomboamericano.caelassessment.service.MailService;
 import co.edu.colomboamericano.caelassessment.service.ProspectiveService;
 import co.edu.colomboamericano.caelassessment.utils.AssessmentWordPressHelper;
+import co.edu.colomboamericano.caelassessment.utils.ProgramsAgeRangesUtils;
 
 @Service
 @Scope("singleton")
@@ -65,11 +68,21 @@ public class AssessmentServiceImp implements AssessmentService
 	private AssessmentWordPressHelper assessmentWordPressHelper;
 	
 	@Autowired
+	private ProgramsAgeRangesUtils programsAgeRangesUtils;
+	
+	@Autowired
 	private ProspectiveService prospectiveService;
+	
+	@Autowired
+	private AssessmentStatusService assessmentStatusService;
+	
+	@Autowired
+	private MailService mailService;
 	
 	private Gson gson = new Gson();
 
 	/**
+	 * @author Smarthink
 	 * @param Numero documento 'documentNumber', tipo del documento 'documentType', nivel 'level', programa 'program', sede 'headquarter', fecha nacimiento 'birthdate'.
 	 * @return Assessment created.
 	 * @throws If the person is not in the prospective table or is already registered in the assessment table.
@@ -140,11 +153,32 @@ public class AssessmentServiceImp implements AssessmentService
 	public Optional<Assessment> findById(Integer id) {
 		return assessmentRepositrory.findById( id );
 	};
+	
+	/**
+	 * @author Smarthink
+	 * @param The url sends the attributes that refer to the field to be updated, with the id to find the entity and as the body of the request assessmentsObject that is the data to be updated in the db.
+	 * @return Updated entity
+	 * @throws If not found the entity
+	 */
+	@Override
+	@Transactional( readOnly = false, propagation = Propagation.REQUIRED, rollbackFor = Exception.class )
+	public AssessmentDto updateAssessmentFieldAssessments( Integer id, String assessmentsObject ) throws Exception
+	{
+		Optional<Assessment> assessmentEntity = findById( id );
+		
+		if( !assessmentEntity.isPresent() ) throw new Exception("No se encontro la la entidad del assessment para actualizar");
+		
+		assessmentEntity.get().setAssessments( assessmentsObject );
+		assessmentRepository.save( assessmentEntity.get() );
+		AssessmentDto assessmentDto = assessmentMapper.assessmentToAssessmentDto( assessmentEntity.get() );
+
+		return assessmentDto;
+	};
 
 	@Override
-	public Assessment update(Assessment entity) throws Exception {
-		// TODO Auto-generated method stub
-		return null;
+	public Assessment update( Assessment entity ) throws Exception
+	{
+		return null;		// TODO Auto-generated method stub
 	}
 
 	@Override
@@ -390,7 +424,7 @@ public class AssessmentServiceImp implements AssessmentService
 	}
 
 	@Override
-	public Assessment save(Assessment entity) throws Exception {
+	public Assessment save( Assessment entity ) throws Exception {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -399,5 +433,54 @@ public class AssessmentServiceImp implements AssessmentService
 		Object result = transformAssessmentsAndQuestionStepper(id);
 		return result;
 	}
+	
+	/**
+     * @author Smarthink
+	 * @param Assessment entity, name of course, name of emailImage, boolean state of isLastLevel
+	 * @return a message indicating whether or not the message was sent
+	 * @throws Exception If any of the parameters is null
+	 */
+	public String finishAssessment( Assessment assessment, String course, String emailImage, Boolean isLastLevel ) throws Exception
+	{
+		if( assessment == null ) throw new Exception("El assessment no puede ser nulo en finishAssessment");
+		
+		if( course == null || course.isEmpty() ) throw new Exception("El course no puede ser nulo en finishAssessment");
+		
+		if( emailImage == null || emailImage.isEmpty() ) throw new Exception("El emailImage no puede ser nulo en finishAssessment");
+		
+		if( isLastLevel == null ) throw new Exception("El isLastLevel no puede ser nulo en finishAssessment");
+		
+		LocalDate prospectiveBirthday = assessment.getProspective().getBirthdate();
+		
+		 if ( assessment.getProgram().equals("TEENSKIDS") && course.equals("Advanced 1") )
+		 { 
+				Object courseTeensKids = programsAgeRangesUtils.getCourseTeensKids( prospectiveBirthday, course );
+				
+				assessment.setCourse( String.valueOf( courseTeensKids ) );
+				assessment.setAssessmentStatus( assessmentStatusService.findById( 2 ).get()  );
+				assessmentRepository.save( assessment  );
+				
+				EmailLevelingDto emailData = new EmailLevelingDto();
+				emailData.setProspective(null);
+				emailData.setCourse(course);
+				emailData.setEmailImage(emailImage);
+				emailData.setIsLastLevel(isLastLevel);
+				
+				return mailService.sendLevelingNotification( emailData );
+
+		 }  else {
+				assessment.setCourse( String.valueOf( course ) );
+				assessment.setAssessmentStatus( assessmentStatusService.findById( 2 ).get()  );
+				assessmentRepository.save( assessment  );
+				 
+				EmailLevelingDto emailData = new EmailLevelingDto();
+				emailData.setProspective(null);
+				emailData.setCourse(course);
+				emailData.setEmailImage(emailImage);
+				emailData.setIsLastLevel(isLastLevel);
+				
+				return mailService.sendLevelingNotification( emailData );
+		 }
+	};
 
 }

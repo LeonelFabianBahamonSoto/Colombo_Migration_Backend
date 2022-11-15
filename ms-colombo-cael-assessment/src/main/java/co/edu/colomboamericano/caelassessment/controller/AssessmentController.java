@@ -3,23 +3,25 @@ package co.edu.colomboamericano.caelassessment.controller;
 import java.util.Date;
 import java.util.Optional;
 
-import javax.validation.Valid;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import co.edu.colomboamericano.caelassessment.dto.AssessmentDto;
+import co.edu.colomboamericano.caelassessment.dto.EmailLevelingDto;
 import co.edu.colomboamericano.caelassessment.entity.Assessment;
 import co.edu.colomboamericano.caelassessment.entity.Prospective;
 import co.edu.colomboamericano.caelassessment.exception.ModeloNotFoundException;
 import co.edu.colomboamericano.caelassessment.service.AssessmentService;
+import co.edu.colomboamericano.caelassessment.service.MailService;
 import co.edu.colomboamericano.caelassessment.service.ProspectiveService;
 import co.edu.colomboamericano.caelassessment.service.WordPressService;
 
@@ -35,6 +37,9 @@ public class AssessmentController
 	
 	@Autowired
 	private ProspectiveService prospectiveService;
+	
+	@Autowired
+	private MailService mailService;
 
 	/**
 	 * @author Smarthink
@@ -42,7 +47,7 @@ public class AssessmentController
 	 * @return New registered Assessment.
 	 * @throws If any parameter is null.
 	 */
-	@PostMapping("/createAssessment")
+	@PostMapping("")
 	public ResponseEntity<AssessmentDto> createAssessment( @RequestParam Integer documentType, @RequestParam Long documentNumber,
 			@RequestParam Date birthdate, @RequestParam String level, @RequestParam String program, @RequestParam String headquarter ) throws Exception
 	{
@@ -139,7 +144,7 @@ public class AssessmentController
 		Object result = wordPressService.getAssessmentPreview(questionGroupId, questionTypeId, questionId);
 		return new ResponseEntity<>(result,HttpStatus.OK);
 	}
-//	
+
 //	/**
 //	 * @param
 //	 * @return levels.
@@ -154,18 +159,49 @@ public class AssessmentController
 		}
 		return new ResponseEntity<>(result,HttpStatus.OK);
 	};
+
+	/**
+	 * @author Smarthink
+	 * @param The url sends the attributes that refer to the field to be updated, with the id to find the entity and as the body of the request assessmentsObject that is the data to be updated in the db.
+	 * @return Updated entity
+	 * @throws If the entity couldn't be updated.
+	 */
+	@PutMapping("/attributes/{id}")
+	public ResponseEntity< AssessmentDto > updateAssessmentFieldAssessments( @PathVariable("id") Integer id, @RequestBody Object assessmentsObject ) throws Exception
+	{
+		return ResponseEntity.status( HttpStatus.OK ).body( assessmentService.updateAssessmentFieldAssessments( id, String.valueOf( assessmentsObject ) ) );
+	};
 	
-//	/**
-//	 * @param
-//	 * @return levels.
-//	 * @throws Exception
-//	 */
-//	@GetMapping("/getAssessmentQuestion1")
-//	public ResponseEntity<Optional<Assessment>> updateAssessment( @RequestParam Integer id ) throws Exception
-//	{
-//		return ResponseEntity.status( HttpStatus.OK ).body( assessmentService.findByProspectiveId( id ) );
-//	};
-//	
+	/**
+	 * @author Smarthink
+	 * @param The url sends the attributes that refer to the field to be updated, with the id to find the entity and as the body of the request assessmentsObject that is the data to be updated in the db.
+	 * @return Updated entity
+	 * @throws If the entity couldn't be updated.
+	 * @Note OPCIONAL DEBIDO A QUE EN EL METODO ANTIGUO EN LA URL APARACE EN VEZ DE 'assessments' CON 'attributes' DEL SIGUIENTE MODO ...attributes/{id}
+	 */
+	@PutMapping("/{id}")
+	public ResponseEntity< AssessmentDto > updateAssessment( @PathVariable("id") Integer id, @RequestBody Object assessmentsObject ) throws Exception
+	{
+		return ResponseEntity.status( HttpStatus.OK ).body( assessmentService.updateAssessmentFieldAssessments( id, String.valueOf( assessmentsObject ) ) );
+	};
+	
+	/**
+     * @author Smarthink
+	 * @param EmailLevelingDto entity
+	 * @return a message indicating whether or not the message was sent
+	 * @throws If the email couldn't be sent
+	 */
+	@PostMapping("/emailLevelings")
+	public ResponseEntity< String > sendEmailLeveling( @RequestBody EmailLevelingDto emailData ) throws Exception
+	{		
+		String response = mailService.sendLevelingNotification( emailData );
+
+		if( response.equals("Email sent") )
+			return ResponseEntity.status( HttpStatus.OK ).body( "El email fue enviado" );
+
+		return ResponseEntity.status( HttpStatus.BAD_REQUEST ).body( response );
+	};
+
 //	/**
 //	 * @param
 //	 * @return levels.
@@ -173,17 +209,6 @@ public class AssessmentController
 //	 */
 //	@GetMapping("/getAssessmentQuestion2")
 //	public ResponseEntity<Optional<Assessment>> validateQuestion( @RequestParam Integer id ) throws Exception
-//	{
-//		return ResponseEntity.status( HttpStatus.OK ).body( assessmentService.findByProspectiveId( id ) );
-//	};
-//	
-//	/**
-//	 * @param
-//	 * @return levels.
-//	 * @throws Exception
-//	 */
-//	@GetMapping("/getAssessmentQuestion3")
-//	public ResponseEntity<Optional<Assessment>> sendEmailLeveling( @RequestParam Integer id ) throws Exception
 //	{
 //		return ResponseEntity.status( HttpStatus.OK ).body( assessmentService.findByProspectiveId( id ) );
 //	};
@@ -232,16 +257,7 @@ public class AssessmentController
 //		return ResponseEntity.status( HttpStatus.OK ).body( assessmentService.findByProspectiveId( id ) );
 //	};
 //	
-//	/**
-//	 * @param
-//	 * @return levels.
-//	 * @throws Exception
-//	 */
-//	@GetMapping("/getAssessmentQuestion8")
-//	public ResponseEntity<Optional<Assessment>> finishAssessment( @RequestParam Integer id ) throws Exception
-//	{
-//		return ResponseEntity.status( HttpStatus.OK ).body( assessmentService.findByProspectiveId( id ) );
-//	};
+
 	
 	
 	

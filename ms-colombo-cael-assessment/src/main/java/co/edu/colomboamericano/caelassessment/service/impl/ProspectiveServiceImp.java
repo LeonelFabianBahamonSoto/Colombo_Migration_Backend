@@ -58,9 +58,7 @@ public class ProspectiveServiceImp implements ProspectiveService
 	{
 		ProspectiveDto isProspective = findByDocumentNumber( prospectiveToSave.getDocumentNumber() );
 
-		if( isProspective != null ) {
-			throw new Exception("EL usuario ya se encuentra registrado");
-		};
+		if( isProspective != null ) throw new Exception("EL usuario ya se encuentra registrado");
 
 		ProspectiveDto prospective = new ProspectiveDto();
 		Date currentDate = new Date();
@@ -206,7 +204,7 @@ public class ProspectiveServiceImp implements ProspectiveService
 	
 	@Override
 	public Optional<Prospective> findById(Integer id) {
-		return null; // INACTIVE METHOD
+		return prospectiveRepository.findById(id);
 	}
 
 	@Override
