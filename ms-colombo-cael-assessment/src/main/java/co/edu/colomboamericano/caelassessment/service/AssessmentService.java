@@ -2,9 +2,10 @@ package co.edu.colomboamericano.caelassessment.service;
 
 import java.util.Date;
 import java.util.Optional;
-
+import java.util.List;
 import co.edu.colomboamericano.caelassessment.dto.AssessmentDto;
 import co.edu.colomboamericano.caelassessment.dto.AssessmentGetDto;
+import co.edu.colomboamericano.caelassessment.dto.RequestQuestion;
 import co.edu.colomboamericano.caelassessment.entity.Assessment;
 
 public interface AssessmentService extends GenericService<Assessment, Integer>
@@ -24,6 +25,8 @@ public interface AssessmentService extends GenericService<Assessment, Integer>
 	AssessmentDto updateAssessmentFieldAssessments( Integer id, String assessmentsObject ) throws Exception ;
 	
 	Object buildQuestionPreview(Integer groupQuestionsId,Integer groupTypeId,Integer questionId) throws Exception;
+	
+	Object validateQuestion(String answer) throws Exception;
 
 	String finishAssessment(Assessment assessment, String course, String emailImage, Boolean isLastLevel) throws Exception;
 

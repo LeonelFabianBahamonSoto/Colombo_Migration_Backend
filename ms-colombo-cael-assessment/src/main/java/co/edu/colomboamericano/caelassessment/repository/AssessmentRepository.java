@@ -31,5 +31,6 @@ public interface AssessmentRepository extends JpaRepository<Assessment, Integer>
 	@Query(value = "SELECT a FROM Assessment a WHERE a.prospective.id = :id")
 	Assessment getAssessments(@Param("id")Integer id);
 	
-	
+	@Query(value = "SELECT a.assessments FROM Assessment a WHERE a.id = :id")
+	String getAssessmentForValidateQuestion(@Param("id")Integer id);
 }
