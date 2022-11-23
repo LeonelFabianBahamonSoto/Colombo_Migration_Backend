@@ -23,6 +23,8 @@ import com.google.gson.Gson;
 
 import co.edu.colomboamericano.caelassessment.dto.AssessmentDto;
 import co.edu.colomboamericano.caelassessment.dto.AssessmentGetDto;
+import co.edu.colomboamericano.caelassessment.dto.AssessmentInfoDto;
+import co.edu.colomboamericano.caelassessment.dto.AssessmentsData;
 import co.edu.colomboamericano.caelassessment.dto.CurrentQuestion;
 import co.edu.colomboamericano.caelassessment.dto.EmailLevelingDto;
 import co.edu.colomboamericano.caelassessment.dto.ProspectiveDto;
@@ -42,9 +44,12 @@ import co.edu.colomboamericano.caelassessment.service.AssessmentStatusService;
 import co.edu.colomboamericano.caelassessment.service.MailService;
 import co.edu.colomboamericano.caelassessment.service.ProspectiveService;
 import co.edu.colomboamericano.caelassessment.service.QuestionUtilService;
+import co.edu.colomboamericano.caelassessment.utils.AssessmentHelper;
 import co.edu.colomboamericano.caelassessment.utils.AssessmentWordPressHelper;
 import co.edu.colomboamericano.caelassessment.utils.ProgramsAgeRangesUtils;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @Scope("singleton")
 public class AssessmentServiceImp implements AssessmentService
@@ -78,6 +83,9 @@ public class AssessmentServiceImp implements AssessmentService
 	
 	@Autowired
 	private MailService mailService;
+	
+	@Autowired
+	private AssessmentHelper assessmentHelper;
 	
 	private Gson gson = new Gson();
 
@@ -311,9 +319,9 @@ public class AssessmentServiceImp implements AssessmentService
 	
 
 	@Override
-	public Assessment save( Assessment entity ) throws Exception {
-		// TODO Auto-generated method stub
-		return null;
+	public Assessment save( Assessment entity ) throws Exception
+	{
+		return assessmentRepository.save( entity );
 	}
 
 	public Object getAssessmentQuestion(Integer id) throws Exception {
@@ -323,51 +331,119 @@ public class AssessmentServiceImp implements AssessmentService
 	
 	/**
      * @author Smarthink
+	 * @param  ES OTRO SERVICIO ?
+	 * @return levels.
+	 * @throws Exception
+	 */
+	@Override
+	public Object getApprovedAssessmentResponse( Integer id ) throws Exception //Opcional pero por parametro el recibe un Assessment Entity
+	{
+		Optional<Assessment> assessment = findById( id ); //BORRAR PARA OBTENER EL ASSESSMENT que debe venir como parametro en el metodo actual
+		String assessmentsData = assessment.get().getAssessments(); //BORRAR
+		//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------//
+
+		List< AssessmentsData > assessmentConfigList = new ArrayList< AssessmentsData >();
+		Type collectionType  =  new TypeToken<List< AssessmentsData >>() {}.getType();
+		assessmentConfigList = gson.fromJson( assessmentsData, collectionType );
+		
+		AssessmentsData assessmentConfig = assessmentConfigList.get( assessmentConfigList.size() -1  );
+		AssessmentsData beforeAssessmentConfig = assessmentConfigList.get( assessmentConfigList.size() -1  );
+
+		AssessmentInfoDto assessmentInfo = assessmentHelper.getAssessmentConfigInfo( assessmentConfig, assessment.get() );
+		
+//		assessmentConfig.setApproved( true ); //SE COMENTA DEBIDO A QUE EN LOS LOGS SE VISUALIZAN MUCHOS CON FALSE EN EL SIGUIENTE LOG
+		
+//		Prospective prospective = assessment.get().getProspective();
+		Long prospectiveDocumentNumber = assessment.get().getProspective().getDocumentNumber();
+		
+		String title = assessmentConfig.getAssessment().getTitle();
+		
+		log.info("\nAssessmentNormalEnd: " + 
+			"prospective.documentNumber: " + prospectiveDocumentNumber +
+			" -\n title: " + title +
+			" -\n assessmentInfo.level.slug: " + assessmentInfo.getLevel() +
+			" -\n assessmentInfo.course: " + assessmentInfo.getCourse() +
+			" -\n assessment.assessmentConfig.approved: " + assessmentConfig.getApproved()
+		); //OPCIONAL
+
+		if( !beforeAssessmentConfig.equals( null ) && beforeAssessmentConfig.getApproved() == false )
+		{
+			AssessmentInfoDto beforeAssessmentConfigInfo = assessmentHelper.getAssessmentConfigInfo( beforeAssessmentConfig, assessment.get() );
+			String finishResponse = finishAssessment(  assessment.get(), beforeAssessmentConfigInfo.getCourse(), beforeAssessmentConfigInfo.getLevel().getImage(), null );
+
+			if( !finishResponse.equals("Email sent") ) throw new Exception("No fue posible enviar el email en getApprovedAssessmentResponse");
+
+			return beforeAssessmentConfigInfo;
+		};
+
+		String nextAssessment = assessmentWordPressHelper.getAssessmentByDirection( id, "next" );
+
+		if( !nextAssessment.equals("Leveling doesn't exist") || !nextAssessment.equals("WordPress service not available") )
+		{
+//			List< AssessmentsData > nextAssessmentList = new ArrayList< AssessmentsData >();
+//			Type nextAssessmentType  =  new TypeToken<List< AssessmentsData >>() {}.getType();
+//			nextAssessmentList = gson.fromJson( nextAssessment, nextAssessmentType );
+
+//			AssessmentInfoDto nextAssessmentInfo = assessmentHelper.getAssessmentConfigInfo( nextAssessmentList.get( nextAssessmentList.size() - 1 ), assessment.get() );
+			//LO ANTERIOR SE COMENTA PORQUE NO SE LE VE USO EN EL NEST.JS PERO SI A LA SIGUINETE INSTRUCCION QUE PROCESA Y ALMACENA EN ASSESSMENTS
+			//SE COMENTA EL DIA 22 DE NOV DEL 2022, DE FUNCIONAR BIEN EL SISTEMA ASI POR FAVOR ELIMINARLA.
+
+			List< Object > newAssessmentsObject = assessmentHelper.startNewAssessment( assessment.get(), nextAssessment );
+			assessment.get().setAssessments( newAssessmentsObject.toString() );
+
+			this.save( assessment.get() );
+
+			assessmentHelper.getCurrentQuestion( assessment.get() );
+		} else {
+			throw new Exception( "Error con el nextAssessment de getApprovedAssessmentResponse. Numero de documento: " + prospectiveDocumentNumber 
+					+ " Titulo del Nivel de Assessment" + title + "Message: " + nextAssessment );
+		};
+
+		if( nextAssessment.equals("HIGHEST_ASSESSMENT") )
+		{
+			
+		};
+		
+		 return assessmentInfo;
+
+	};
+	
+	/**
+     * @author Smarthink
 	 * @param Assessment entity, name of course, name of emailImage, boolean state of isLastLevel
 	 * @return a message indicating whether or not the message was sent
 	 * @throws Exception If any of the parameters is null
 	 */
+	@Override
 	public String finishAssessment( Assessment assessment, String course, String emailImage, Boolean isLastLevel ) throws Exception
 	{
+		if( isLastLevel == null ) isLastLevel = false;
+		
 		if( assessment == null ) throw new Exception("El assessment no puede ser nulo en finishAssessment");
 		
 		if( course == null || course.isEmpty() ) throw new Exception("El course no puede ser nulo en finishAssessment");
 		
 		if( emailImage == null || emailImage.isEmpty() ) throw new Exception("El emailImage no puede ser nulo en finishAssessment");
 		
-		if( isLastLevel == null ) throw new Exception("El isLastLevel no puede ser nulo en finishAssessment");
-		
 		LocalDate prospectiveBirthday = assessment.getProspective().getBirthdate();
-		
-		 if ( assessment.getProgram().equals("TEENSKIDS") && course.equals("Advanced 1") )
-		 { 
-				Object courseTeensKids = programsAgeRangesUtils.getCourseTeensKids( prospectiveBirthday, course );
-				
-				assessment.setCourse( String.valueOf( courseTeensKids ) );
-				assessment.setAssessmentStatus( assessmentStatusService.findById( 2 ).get()  );
-				assessmentRepository.save( assessment  );
-				
-				EmailLevelingDto emailData = new EmailLevelingDto();
-				emailData.setProspective(null);
-				emailData.setCourse(course);
-				emailData.setEmailImage(emailImage);
-				emailData.setIsLastLevel(isLastLevel);
-				
-				return mailService.sendLevelingNotification( emailData );
 
-		 }  else {
-				assessment.setCourse( String.valueOf( course ) );
-				assessment.setAssessmentStatus( assessmentStatusService.findById( 2 ).get()  );
-				assessmentRepository.save( assessment  );
-				 
-				EmailLevelingDto emailData = new EmailLevelingDto();
-				emailData.setProspective(null);
-				emailData.setCourse(course);
-				emailData.setEmailImage(emailImage);
-				emailData.setIsLastLevel(isLastLevel);
-				
-				return mailService.sendLevelingNotification( emailData );
-		 }
+		 if ( assessment.getProgram().equals("TEENSKIDS") && !course.equals("Advanced 1") )
+		 { 
+				String courseTeensKids = programsAgeRangesUtils.getCourseTeensKids( prospectiveBirthday, course );
+				assessment.setCourse( courseTeensKids );
+		 }  else assessment.setCourse( course );
+		 
+		 assessment.setAssessmentStatus( assessmentStatusService.findById( 2 ).get()  );
+
+		assessmentRepository.save( assessment  );
+		 
+		EmailLevelingDto emailData = new EmailLevelingDto();
+		emailData.setProspective( assessment.getProspective() );
+		emailData.setCourse( course );
+		emailData.setEmailImage( emailImage );
+		emailData.setIsLastLevel( isLastLevel );
+
+		return mailService.sendLevelingNotification( emailData );
 	};
 
 	@Override

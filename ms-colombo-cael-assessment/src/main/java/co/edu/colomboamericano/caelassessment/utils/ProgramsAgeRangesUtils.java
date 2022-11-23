@@ -5,17 +5,16 @@ import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.json.JSONObject;
 import org.springframework.stereotype.Service;
 
 @Service
 public class ProgramsAgeRangesUtils
 {
-	public Object getCourseTeensKids( LocalDate birthday, String course ) throws ParseException
+	public String getCourseTeensKids( LocalDate birthday, String course ) throws ParseException
 	{
 	    LocalDate currentDate = LocalDate.now();
 	    
-	    int years = birthday.getYear() - currentDate.getYear();
+	    int years = currentDate.getYear() - birthday.getYear();
 
 		Map<String, String> programAgeRangeMap = new HashMap<>();
 		
@@ -58,9 +57,9 @@ public class ProgramsAgeRangesUtils
 			programAgeRangeMap.put( "program", "Advanced 1" );
 			programAgeRangeMap.put( "course", "Junior 1" );
 		};
+
+		if( programAgeRangeMap.get("course") == null ) return course;
 		
-		JSONObject jsonResponse =  new JSONObject( programAgeRangeMap );
-		
-		return jsonResponse;
+		return programAgeRangeMap.get("course");
 	};
 }

@@ -212,6 +212,25 @@ public class AssessmentController
 
 		return ResponseEntity.status( HttpStatus.BAD_REQUEST ).body( response );
 	};
+	
+	/**
+     * @author Smarthink
+	 * @param  ES OTRO SERVICIO ?
+	 * @return levels.
+	 * @throws Exception
+	 */
+	@GetMapping("/getAssessmentQuestion4")
+	public ResponseEntity<Optional<Assessment>> getApprovedAssessmentResponse( @RequestParam Integer id ) throws Exception
+	{
+		return ResponseEntity.status( HttpStatus.OK ).body( assessmentService.findByProspectiveId( id ) );
+	};
+	
+	//BORRAR
+	@GetMapping("/prueba")
+	public ResponseEntity< Object > pruebaAssessment( @RequestParam Integer id ) throws Exception
+	{
+		return ResponseEntity.status( HttpStatus.OK ).body( assessmentService.getApprovedAssessmentResponse( id ) );
+	};
 
 //	/**
 //	 * @param
@@ -224,16 +243,6 @@ public class AssessmentController
 //		return ResponseEntity.status( HttpStatus.OK ).body( assessmentService.findByProspectiveId( id ) );
 //	};
 //	
-//	/**
-//	 * @param
-//	 * @return levels.
-//	 * @throws Exception
-//	 */
-//	@GetMapping("/getAssessmentQuestion4")
-//	public ResponseEntity<Optional<Assessment>> getApprovedAssessmentResponse( @RequestParam Integer id ) throws Exception
-//	{
-//		return ResponseEntity.status( HttpStatus.OK ).body( assessmentService.findByProspectiveId( id ) );
-//	};
 //	
 //	/**
 //	 * @param

@@ -1,9 +1,5 @@
 package co.edu.colomboamericano.caelassessment.utils;
 
-import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.List;
-
 import javax.annotation.PostConstruct;
 
 import org.json.JSONObject;
@@ -14,13 +10,11 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestTemplate;
 
-import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 
-import co.edu.colomboamericano.caelassessment.dto.CurrentQuestion;
-import co.edu.colomboamericano.caelassessment.dto.questionPreview.QuestionPre;
 import co.edu.colomboamericano.caelassessment.dto.questionPreview.QuestionPreview;
 import co.edu.colomboamericano.caelassessment.exception.ModeloNotFoundException;
 
@@ -60,10 +54,34 @@ public class AssessmentWordPressHelper
 			
 			return String.valueOf( response.getJSONObject("body").getJSONObject("data") );
 		} catch (Exception e) {
-			return "No fue posible consultar al wordpress desde getAssessment. Error" + e.getCause() + " " + e.getMessage();
+			return "No fue posible consultar al wordpress desde getAssessment. Error " + e.getCause() + " " + e.getMessage();
 		}
 	};
 	
+	/**
+	 * @author Smarthink
+	 * @param  Assessment id, direction that can have the values of 'next' or 'previous'
+	 * @return  String if any response inside data otherwise return null.
+	 * @throws if it's not possible to connect with WordPress
+	 */
+	public String getAssessmentByDirection( Integer assessmentId, String direction )
+	{
+		try {
+			ResponseEntity<Object> nextAssessmentResponse = restTemplate.getForEntity( wordPressService + "assessments/" + direction + "/" + assessmentId, Object.class );
+
+			return nextAssessmentResponse.toString();
+		} catch ( RestClientResponseException e ) {
+
+		    JSONObject data = new JSONObject( e.getResponseBodyAsString() );
+		    String response = "WordPress service not available";
+
+		    if(  data.has("data") ) response = String.valueOf( data.getJSONObject("data").get("type") );
+		    if(  data.has("message") ) response = "Leveling doesn't exist";
+
+	        return response;
+		}
+	};
+
 	public Object getAssessmentLevels() {
 		try {
 			HttpEntity<?> entity = new HttpEntity<Object>(headers);

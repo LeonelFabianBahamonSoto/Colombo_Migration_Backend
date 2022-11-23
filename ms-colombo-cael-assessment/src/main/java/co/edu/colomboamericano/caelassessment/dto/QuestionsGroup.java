@@ -12,8 +12,8 @@ import lombok.Data;
  * base de datos miniveldeingles
   */
 @Data
-public class QuestionsGroup {
-
+public class QuestionsGroup
+{
 	@JsonProperty(value = "questionGroupId")
 	private int questionGroupId;
 	

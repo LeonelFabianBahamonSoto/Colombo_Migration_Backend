@@ -25,4 +25,8 @@ public interface AssessmentService extends GenericService<Assessment, Integer>
 	
 	Object buildQuestionPreview(Integer groupQuestionsId,Integer groupTypeId,Integer questionId) throws Exception;
 
+	String finishAssessment(Assessment assessment, String course, String emailImage, Boolean isLastLevel) throws Exception;
+
+	Object getApprovedAssessmentResponse( Integer prospectiveId ) throws Exception;
+
 }

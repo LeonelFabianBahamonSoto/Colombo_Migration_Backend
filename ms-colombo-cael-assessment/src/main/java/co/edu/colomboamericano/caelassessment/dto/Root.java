@@ -22,6 +22,6 @@ public class Root {
 	 private ArrayList<QuestionsGroup> questionsGroup;
 	 
 	 @JsonProperty(value = "approved")
-	 private boolean approved;
+	 private Boolean approved;
 
 }

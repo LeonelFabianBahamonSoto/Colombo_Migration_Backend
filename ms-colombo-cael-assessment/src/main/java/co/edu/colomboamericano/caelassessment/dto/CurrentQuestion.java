@@ -11,9 +11,13 @@ public class CurrentQuestion {
 	private Integer assessmentId;
 	
 	private int questionGroupId;
+
 	private int questionTypeId;
+
 	private int questionId;
+
 	private String title;
+
 	private String typeName;
 	
 	@JsonInclude(JsonInclude.Include.NON_NULL) 
