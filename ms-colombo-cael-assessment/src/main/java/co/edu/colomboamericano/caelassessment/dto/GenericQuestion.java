@@ -5,8 +5,8 @@ import lombok.Data;
 @Data
 public class GenericQuestion {
 
-	private Integer score;
-	private Integer lostScore;
+	private int score;
+	private int lostScore;
 	private boolean isAnswered;
 	
 	public  Validation getValidation(boolean isCorrect) {

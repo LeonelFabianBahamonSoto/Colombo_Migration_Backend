@@ -10,7 +10,9 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.time.DateFormatUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -21,19 +23,32 @@ import org.springframework.transaction.annotation.Transactional;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 
+import co.edu.colomboamericano.caelassessment.dto.Answer;
 import co.edu.colomboamericano.caelassessment.dto.AssessmentDto;
 import co.edu.colomboamericano.caelassessment.dto.AssessmentGetDto;
+import co.edu.colomboamericano.caelassessment.dto.CompleteDraggable;
+import co.edu.colomboamericano.caelassessment.dto.CorrectOrderDraggable;
 import co.edu.colomboamericano.caelassessment.dto.CurrentQuestion;
 import co.edu.colomboamericano.caelassessment.dto.EmailLevelingDto;
+import co.edu.colomboamericano.caelassessment.dto.GenericQuestion;
+import co.edu.colomboamericano.caelassessment.dto.OrderSentences;
+import co.edu.colomboamericano.caelassessment.dto.PairingDraggable;
 import co.edu.colomboamericano.caelassessment.dto.ProspectiveDto;
 import co.edu.colomboamericano.caelassessment.dto.ProspectiveGetDto;
 import co.edu.colomboamericano.caelassessment.dto.Question;
 import co.edu.colomboamericano.caelassessment.dto.QuestionStepper;
+import co.edu.colomboamericano.caelassessment.dto.RequestQuestion;
+import co.edu.colomboamericano.caelassessment.dto.RequestQuestions;
 import co.edu.colomboamericano.caelassessment.dto.Root;
+import co.edu.colomboamericano.caelassessment.dto.SelectDraggable;
+import co.edu.colomboamericano.caelassessment.dto.SelectSingleAnswer;
+import co.edu.colomboamericano.caelassessment.dto.Validation;
+import co.edu.colomboamericano.caelassessment.dto.Writing;
 import co.edu.colomboamericano.caelassessment.dto.questionPreview.QuestionPre;
 import co.edu.colomboamericano.caelassessment.dto.questionPreview.QuestionPreview;
 import co.edu.colomboamericano.caelassessment.entity.Assessment;
 import co.edu.colomboamericano.caelassessment.entity.AssessmentStatus;
+import co.edu.colomboamericano.caelassessment.exception.ModeloNotFoundException;
 import co.edu.colomboamericano.caelassessment.mapper.AssessmentMapper;
 import co.edu.colomboamericano.caelassessment.repository.AssessmentRepository;
 import co.edu.colomboamericano.caelassessment.repository.AssessmentRepositoryCustom;
@@ -249,7 +264,7 @@ public class AssessmentServiceImp implements AssessmentService
 	 */
 	
 	@Override
-	public Object transformAssessmentsAndQuestionStepper(Integer id) throws Exception {
+	public CurrentQuestion transformAssessmentsAndQuestionStepper(Integer id) throws Exception {
 		List<Object> resultQuery = assessmentRepositoryCustom.getAssementAndQuestionsStepper(id);
 		if (resultQuery.size() <= 0 || resultQuery.get(0) == null) {
 			return null;
@@ -266,7 +281,7 @@ public class AssessmentServiceImp implements AssessmentService
 				questionStepper = gson.fromJson(String.valueOf(object[1]), QuestionStepper.class);
 				idAssessment = Integer.parseInt(String.valueOf(object[2]));
 		}
-		 Object resultGenerate = generateCurrentCuestion(root,questionStepper,idAssessment);
+		 CurrentQuestion resultGenerate = generateCurrentCuestion(root,questionStepper,idAssessment);
 		 return resultGenerate;
 	}
 	
@@ -274,7 +289,7 @@ public class AssessmentServiceImp implements AssessmentService
 	/*
 	 * generar un CurrentQuestion basado en el questionStepper
 	 */
-	public Object generateCurrentCuestion(List<Root> roots,QuestionStepper questionStepper,Integer idAssessment ) {
+	public CurrentQuestion generateCurrentCuestion(List<Root> roots,QuestionStepper questionStepper,Integer idAssessment ) {
 		Root root = getLastIndexAssessments(roots);
 		CurrentQuestion currentQuestion = new CurrentQuestion();
 		Question question = new Question();
@@ -389,4 +404,148 @@ public class AssessmentServiceImp implements AssessmentService
 		return currentQuestion;
 	}
 
+	@Override
+	public Object validateQuestion(String answer) throws Exception {
+		
+		
+		
+		Object result =  generateAssessmentAndQuestionsStepperForValidate(answer,1448);
+		return result;
+	}
+
+	
+	public Object generateAssessmentAndQuestionsStepperForValidate(String answer,Integer id) throws Exception {
+		 Validation validation = new Validation();
+		boolean isCorrect = false;
+		  
+		List<Object> resultQuery = assessmentRepositoryCustom.getAssementForValidateQuestion(id);
+		if (resultQuery.size() <= 0 || resultQuery.get(0) == null) {
+			return null;
+		}
+		
+		List<Root> roots = new ArrayList<Root>();
+		Type collectionType  =  new TypeToken<List<Root>>() {}.getType();
+		QuestionStepper questionStepper = new QuestionStepper();
+		
+		 for (Iterator iterator = resultQuery.iterator(); iterator.hasNext();) {
+			 Object[] object = (Object[]) iterator.next();
+				
+				roots = gson.fromJson(String.valueOf(object[0]), collectionType);
+				questionStepper = gson.fromJson(String.valueOf(object[1]), QuestionStepper.class);
+		}
+		 
+		 Root root = this.getLastIndexAssessments(roots);
+			String resultTypeName =  this.questionUtilService.putFirsLetterInUppercase(root.getQuestionsGroup().get(questionStepper.getQuestionGroupIndex())
+					.getQuestionTypes().get(questionStepper.getQuestionTypeIndex()).getTypeName());
+			
+			Object result = validate(root,questionStepper,answer);
+		 return result;
+	}
+	
+	public Object validate(Root root,QuestionStepper questionStepper,String answer) {
+		
+		String resultTypeName =  this.questionUtilService.putFirsLetterInUppercase(root.getQuestionsGroup().get(questionStepper.getQuestionGroupIndex())
+				.getQuestionTypes().get(questionStepper.getQuestionTypeIndex()).getTypeName());
+		boolean isCorrect = false;
+		 if (!root.getQuestionsGroup().get(questionStepper.getQuestionGroupIndex())
+					.getQuestionTypes().get(questionStepper.getQuestionTypeIndex()).getQuestions()
+					.get(questionStepper.getQuestionIndex()).isAnswered()) {
+
+						
+		}
+		 
+		 if (CorrectOrderDraggable.class.getSimpleName().equals(resultTypeName)) {
+			 if (!answer.contains("[")) {
+					return null;
+				}
+			 RequestQuestions requestQuestions = new Gson().fromJson(answer,RequestQuestions.class);
+				ArrayList<String> answersBD = (ArrayList<String>) root.getQuestionsGroup().get(questionStepper.getQuestionGroupIndex())
+						.getQuestionTypes().get(questionStepper.getQuestionTypeIndex()).getQuestions()
+						.get(questionStepper.getQuestionIndex()).getCorrectOrder();
+
+				isCorrect = answersBD.equals(requestQuestions.getAnswer());
+			}
+		 
+			System.out.println("typeName: "+resultTypeName);
+			
+		 if (SelectSingleAnswer.class.getSimpleName().equals(resultTypeName)) {
+			 if (answer.contains("[")) {
+				return null;
+			}
+			 RequestQuestion requestQuestion =  new Gson().fromJson(answer,RequestQuestion.class);
+			 	ArrayList<Answer> answersBD = (ArrayList<Answer>) root.getQuestionsGroup().get(questionStepper.getQuestionGroupIndex())
+				.getQuestionTypes().get(questionStepper.getQuestionTypeIndex()).getQuestions()
+				.get(questionStepper.getQuestionIndex()).getAnswers();
+			 	ArrayList<Answer> resultCleaningSpaces = (ArrayList<Answer>) answersBD.stream().map(a-> new Answer(a.isCorrectAnswer(),a.getAnswer().trim())).collect(Collectors.toList());
+			 	isCorrect = resultCleaningSpaces.stream().filter(a -> a.getAnswer().equals(requestQuestion.getAnswer())).findFirst().isPresent();
+			}
+		 
+		 if (Writing.class.getSimpleName().equals(resultTypeName)) {
+			 if (answer.contains("[")) {
+					return null;
+				}
+			 
+			 RequestQuestion requestQuestion =  new Gson().fromJson(answer,RequestQuestion.class);
+			 String answersBD = root.getQuestionsGroup().get(questionStepper.getQuestionGroupIndex())
+						.getQuestionTypes().get(questionStepper.getQuestionTypeIndex()).getQuestions()
+						.get(questionStepper.getQuestionIndex()).getAnswer();
+			 
+			 isCorrect = answersBD.equals(requestQuestion.getAnswer());
+		}
+		 
+		 if (CompleteDraggable.class.getSimpleName().equals(resultTypeName)) {
+			 if (answer.contains("[")) {
+					return null;
+				}
+			 
+			 RequestQuestion requestQuestion =  new Gson().fromJson(answer,RequestQuestion.class);
+			 ArrayList<Answer> answersBD = (ArrayList<Answer>) root.getQuestionsGroup().get(questionStepper.getQuestionGroupIndex())
+						.getQuestionTypes().get(questionStepper.getQuestionTypeIndex()).getQuestions()
+						.get(questionStepper.getQuestionIndex()).getAnswers();
+		 
+			 	isCorrect = answersBD.stream().filter(a -> a.getAnswer().equals(requestQuestion.getAnswer())).findFirst().isPresent();
+			 
+		}
+		 
+		if (PairingDraggable.class.getSimpleName().equals(resultTypeName)) {
+			if (answer.contains("[")) {
+				return null;
+			}
+			
+			 RequestQuestion requestQuestion =  new Gson().fromJson(answer,RequestQuestion.class);
+			 ArrayList<Answer> answersBD = (ArrayList<Answer>) root.getQuestionsGroup().get(questionStepper.getQuestionGroupIndex())
+						.getQuestionTypes().get(questionStepper.getQuestionTypeIndex()).getQuestions()
+						.get(questionStepper.getQuestionIndex()).getAnswers();
+		 
+			 	isCorrect = answersBD.stream().filter(a -> a.getAnswer().equals(requestQuestion.getAnswer())).findFirst().isPresent();
+		}
+		
+		if (OrderSentences.class.getSimpleName().equals(resultTypeName)) {
+			
+			if (answer.contains("[")) {
+				return null;
+			}
+			
+			 RequestQuestion requestQuestion =  new Gson().fromJson(answer,RequestQuestion.class);
+			 String answersBD = root.getQuestionsGroup().get(questionStepper.getQuestionGroupIndex())
+						.getQuestionTypes().get(questionStepper.getQuestionTypeIndex()).getQuestions()
+						.get(questionStepper.getQuestionIndex()).getAnswer();
+			 
+			 isCorrect = answersBD.equals(requestQuestion.getAnswer());
+		}
+		
+		if (SelectDraggable.class.getSimpleName().equals(resultTypeName)) {
+			if (answer.contains("[")) {
+				return null;
+			}
+			 RequestQuestion requestQuestion =  new Gson().fromJson(answer,RequestQuestion.class);
+			 ArrayList<Answer> answersBD = (ArrayList<Answer>) root.getQuestionsGroup().get(questionStepper.getQuestionGroupIndex())
+						.getQuestionTypes().get(questionStepper.getQuestionTypeIndex()).getQuestions()
+						.get(questionStepper.getQuestionIndex()).getAnswers();
+		 
+			 	isCorrect = answersBD.stream().filter(a -> a.getAnswer().equals(requestQuestion.getAnswer())).findFirst().isPresent();
+		}
+		 
+		 return isCorrect;
+	}
 }

@@ -2,7 +2,11 @@ package co.edu.colomboamericano.caelassessment.controller;
 
 import java.util.Date;
 import java.util.Optional;
+import java.util.List;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.json.JSONTokener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,9 +19,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.google.gson.JsonObject;
+
 import co.edu.colomboamericano.caelassessment.dto.AssessmentDto;
 import co.edu.colomboamericano.caelassessment.dto.AssessmentGetDto;
 import co.edu.colomboamericano.caelassessment.dto.EmailLevelingDto;
+import co.edu.colomboamericano.caelassessment.dto.RequestQuestion;
 import co.edu.colomboamericano.caelassessment.entity.Assessment;
 import co.edu.colomboamericano.caelassessment.exception.ModeloNotFoundException;
 import co.edu.colomboamericano.caelassessment.repository.AssessmentRepositoryCustom;
@@ -213,17 +220,22 @@ public class AssessmentController
 		return ResponseEntity.status( HttpStatus.BAD_REQUEST ).body( response );
 	};
 
-//	/**
-//	 * @param
-//	 * @return levels.
-//	 * @throws Exception
-//	 */
-//	@GetMapping("/getAssessmentQuestion2")
-//	public ResponseEntity<Optional<Assessment>> validateQuestion( @RequestParam Integer id ) throws Exception
-//	{
-//		return ResponseEntity.status( HttpStatus.OK ).body( assessmentService.findByProspectiveId( id ) );
-//	};
-//	
+	/**
+	 * @param
+	 * @return levels.
+	 * @throws Exception
+	 */
+	@GetMapping("/getAssessmentQuestion2")
+	public ResponseEntity<?> validateQuestion(@RequestBody String answer) throws Exception
+	{
+		Object result = assessmentService.validateQuestion(answer);
+		if (result == null) {
+			throw new ModeloNotFoundException("Ocurrio un problema");
+		}
+		
+		return new ResponseEntity<>(result,HttpStatus.OK);
+	};
+	
 //	/**
 //	 * @param
 //	 * @return levels.
