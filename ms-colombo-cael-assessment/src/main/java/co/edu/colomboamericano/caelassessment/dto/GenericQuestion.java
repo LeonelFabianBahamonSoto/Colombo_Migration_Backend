@@ -12,11 +12,13 @@ public class GenericQuestion {
 	public  Validation getValidation(boolean isCorrect) {
 		Validation validation = new Validation();
 		if(isCorrect) {
+			score++;
 			validation.setCorrect(isCorrect);
-			validation.setScore(this.score);
+			validation.setScore(score);
 		}else {
+			score++;
 			validation.setCorrect(isCorrect);
-			validation.setLostScore(this.score);
+			validation.setLostScore(score);
 		}
 	return validation;
 	}

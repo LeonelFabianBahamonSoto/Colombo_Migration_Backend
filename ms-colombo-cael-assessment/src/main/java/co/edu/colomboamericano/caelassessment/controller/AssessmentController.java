@@ -27,6 +27,7 @@ import co.edu.colomboamericano.caelassessment.dto.EmailLevelingDto;
 import co.edu.colomboamericano.caelassessment.dto.RequestQuestion;
 import co.edu.colomboamericano.caelassessment.entity.Assessment;
 import co.edu.colomboamericano.caelassessment.exception.ModeloNotFoundException;
+import co.edu.colomboamericano.caelassessment.repository.AssessmentRepository;
 import co.edu.colomboamericano.caelassessment.repository.AssessmentRepositoryCustom;
 import co.edu.colomboamericano.caelassessment.repository.ProspectiveRepository;
 import co.edu.colomboamericano.caelassessment.service.AssessmentService;
@@ -56,6 +57,7 @@ public class AssessmentController
 
 	@Autowired
 	private AssessmentRepositoryCustom assessmentRepositoryCustom;
+	
 	
 	@Autowired
 	private ProspectiveRepository prospectiveRepository;
@@ -247,6 +249,7 @@ public class AssessmentController
 	@GetMapping("/getAssessmentQuestion2")
 	public ResponseEntity<?> validateQuestion(@RequestBody String answer) throws Exception
 	{
+		
 		Object result = assessmentService.validateQuestion(answer);
 		if (result == null) {
 			throw new ModeloNotFoundException("Ocurrio un problema");
