@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.time.DateFormatUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -32,7 +31,7 @@ import co.edu.colomboamericano.caelassessment.dto.CompleteDraggable;
 import co.edu.colomboamericano.caelassessment.dto.CorrectOrderDraggable;
 import co.edu.colomboamericano.caelassessment.dto.CurrentQuestion;
 import co.edu.colomboamericano.caelassessment.dto.EmailLevelingDto;
-import co.edu.colomboamericano.caelassessment.dto.GenericQuestion;
+import co.edu.colomboamericano.caelassessment.dto.Level;
 import co.edu.colomboamericano.caelassessment.dto.OrderSentences;
 import co.edu.colomboamericano.caelassessment.dto.PairingDraggable;
 import co.edu.colomboamericano.caelassessment.dto.ProspectiveDto;
@@ -50,7 +49,6 @@ import co.edu.colomboamericano.caelassessment.dto.questionPreview.QuestionPre;
 import co.edu.colomboamericano.caelassessment.dto.questionPreview.QuestionPreview;
 import co.edu.colomboamericano.caelassessment.entity.Assessment;
 import co.edu.colomboamericano.caelassessment.entity.AssessmentStatus;
-import co.edu.colomboamericano.caelassessment.exception.ModeloNotFoundException;
 import co.edu.colomboamericano.caelassessment.mapper.AssessmentMapper;
 import co.edu.colomboamericano.caelassessment.repository.AssessmentRepository;
 import co.edu.colomboamericano.caelassessment.repository.AssessmentRepositoryCustom;
@@ -367,8 +365,7 @@ public class AssessmentServiceImp implements AssessmentService
 		AssessmentInfoDto assessmentInfo = assessmentHelper.getAssessmentConfigInfo( assessmentConfig, assessment.get() );
 		
 //		assessmentConfig.setApproved( true ); //SE COMENTA DEBIDO A QUE EN LOS LOGS SE VISUALIZAN MUCHOS CON FALSE EN EL SIGUIENTE LOG
-		
-//		Prospective prospective = assessment.get().getProspective();
+
 		Long prospectiveDocumentNumber = assessment.get().getProspective().getDocumentNumber();
 		
 		String title = assessmentConfig.getAssessment().getTitle();
@@ -392,6 +389,8 @@ public class AssessmentServiceImp implements AssessmentService
 		};
 
 		String nextAssessment = assessmentWordPressHelper.getAssessmentByDirection( id, "next" );
+		
+		log.info( "CONSULTA EL NEXTASSESSMENT AL WORDPRESS: " + nextAssessment );
 
 		if( !nextAssessment.equals("Leveling doesn't exist") || !nextAssessment.equals("WordPress service not available") )
 		{
@@ -408,19 +407,28 @@ public class AssessmentServiceImp implements AssessmentService
 
 			this.save( assessment.get() );
 
-			assessmentHelper.getCurrentQuestion( assessment.get() );
-		} else {
+			return assessmentHelper.getCurrentQuestion( assessment.get() );
+		} ;
+
+		if( nextAssessment.equals("Leveling doesn't exist") || nextAssessment.equals("WordPress service not available") || nextAssessment.equals("UNREACHABLE_APPROVAL_SCORE") ){
 			throw new Exception( "Error con el nextAssessment de getApprovedAssessmentResponse. Numero de documento: " + prospectiveDocumentNumber 
 					+ " Titulo del Nivel de Assessment" + title + "Message: " + nextAssessment );
 		};
 
-		if( nextAssessment.equals("HIGHEST_ASSESSMENT") )
-		{
-			
-		};
-		
-		 return assessmentInfo;
+		 String advancedCourse = "";
 
+		 if( assessment.get().getProgram().equals("TEENS") ) advancedCourse = "Advanced 1";
+		 if( assessment.get().getProgram().equals("TEENSKIDS") ) advancedCourse = "Advanced 1";
+		 if( assessment.get().getProgram().equals("ADULT") ) advancedCourse = "Niveles avanzados";
+
+		 Level level = assessmentInfo.getLevel();
+
+		 String finishResponse = finishAssessment( assessment.get(), advancedCourse,  level.getImage(), true );
+
+		 assessmentInfo.setCourse( advancedCourse );
+		 assessmentInfo.setIsLastLevel( true );
+
+		 return assessmentInfo;
 	};
 	
 	/**

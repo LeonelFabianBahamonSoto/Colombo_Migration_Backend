@@ -37,11 +37,12 @@ public class AssessmentHelper
 		AssessmentInfoDto assessmentInfo = new AssessmentInfoDto();
 
 		assessmentInfo.setId( root.getAssessment().getAssessmentID() );
+		assessmentInfo.setCourse( root.getAssessment().getCourseName() );
 		assessmentInfo.setProspectiveId( assessment.getProspective().getId() );
+		assessmentInfo.setIsLastLevel( false );
 		assessmentInfo.setLevel( root.getAssessment().getLevel() );
 		assessmentInfo.setTotalScore( root.getAssessment().getTotalScore() );
 		assessmentInfo.setApprovalScore( root.getAssessment().getApprovalScore() );
-		assessmentInfo.setCourse( root.getAssessment().getCourseName() );
 		
 		return assessmentInfo;
 	};

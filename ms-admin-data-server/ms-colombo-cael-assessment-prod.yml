@@ -1,0 +1,58 @@
+server:
+  port: 8082
+    
+# MySql #
+spring:
+  application:
+    name: ms-colombo-cael-assessment
+  datasource:
+    url: jdbc:mysql://127.0.0.1:13306:172.16.48.166:13306/miniveldeingles
+#     url: jdbc:mysql://localhost:13306/miniveldeingles
+    username: admin
+    password: gNVnKmZBD9w3ZnH
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+        naming:
+          physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+
+# Registry Client
+
+eureka:
+   client:
+      fetch-registry: true
+      serviceUrl:
+         defaultZone: "http://ms-admin-registry-server:8889/eureka"
+
+# URL wordpress
+url:
+  Wordpress: https://www.colomboamericano.edu.co/wp-json/cael/
+  SOFI_GATEWAY_API: https://api-serviciosenlinea.colomboamericano.edu.co/api/v1
+#  SOFI_GATEWAY_API: https://dev-api-sofi.colomboamericano.edu.co/api/v1/docs
+  
+#Credenciales AWS
+cloud:
+  aws:
+    region:
+      static: us-east-1
+    stack:
+      auto: false
+    credentials:
+      access-key: AKIAJP4QCHWX6XJQVKNA
+      secret-key: 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
+
+#Metrics related configurations
+management:
+  endpoint:
+    metrics:
+      enabled: true
+    prometheus:
+      enabled: true
+    gateway:
+      enabled: true   
+  endpoints:
+      web:
+        exposure:
+          include: "*"

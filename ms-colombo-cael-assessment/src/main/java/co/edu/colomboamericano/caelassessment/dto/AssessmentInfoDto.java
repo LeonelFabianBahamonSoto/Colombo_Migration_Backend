@@ -8,16 +8,18 @@ import lombok.Data;
 public class AssessmentInfoDto implements Serializable
 {
 	private Integer id;
+
+	private String course;
 	
 	private Integer prospectiveId;
+	
+	private Boolean isLastLevel;
 
 	private Level level;
 
 	private String totalScore;
 
 	private String approvalScore;
-	
-	private String course;
 	
 	private static final long serialVersionUID = 1L;
 }

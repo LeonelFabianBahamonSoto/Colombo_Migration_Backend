@@ -1,13 +1,13 @@
 server:
   port: 8888
 spring:
-  application:
-    name: ms-admin-config-server
-#Local configuration for Fabian Bahamon Computer
-  profiles:
-    active: native
   cloud:
     config:
       server:
-        native:
-          search-locations: file:///Users/admin/Documents/Smarthink/Colombo/Colombo_Backend/ms-admin-data-server
+        git:
+          uri: https://gitlab.com/sofi_development/colombo-api_miniveldeingles.git
+          search-paths:
+          - ms-admin-data-server
+          username: FabianBahamon
+          password: glpat--pAy32Z-osBB-bUxNYpB
+          cloneOnStart: true

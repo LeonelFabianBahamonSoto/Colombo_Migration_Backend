@@ -3,7 +3,19 @@ spring:
     host: serviciosenlinea@colomboamericano.edu.co
   application:
     name: ms-colombo-cael-student
-    
+  profiles:
+    active: dev
+  cloud:
+    config:
+      # PARA ENTORNO DE PRODUCCION      
+#      uri: http://ms-admin-config-server:8888
+      # PARA ENTORNO DE DESARROLLO  
+      uri: http://localhost:8888
+      fail-fast: true
+      retry:
+         max-attempts: 20
+         max-interval: 15000
+         initial-interval: 10000
 cloud:
   aws:
     region:
@@ -13,3 +25,19 @@ cloud:
     credentials:
       access-key: AKIAJP4QCHWX6XJQVKNA
       secret-key: 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
+
+#spring:
+#  mail:
+#    host: serviciosenlinea@colomboamericano.edu.co
+#  application:
+#    name: ms-colombo-cael-student
+#    
+#cloud:
+#  aws:
+#    region:
+#      static: us-east-1
+#    stack:
+#      auto: false
+#    credentials:
+#      access-key: AKIAJP4QCHWX6XJQVKNA
+#      secret-key: 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

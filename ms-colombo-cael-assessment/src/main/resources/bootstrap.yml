@@ -3,7 +3,16 @@ spring:
     host: serviciosenlinea@colomboamericano.edu.co
   application:
     name: ms-colombo-cael-assessment
-  jpa:
-    hibernate:
-      naming:
-        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+  profiles:
+    active: dev
+  cloud:
+    config:
+      # PARA ENTORNO DE PRODUCCION      
+#      uri: http://ms-admin-config-server:8888
+      # PARA ENTORNO DE DESARROLLO  
+      uri: http://localhost:8888
+      fail-fast: true
+      retry:
+         max-attempts: 20
+         max-interval: 15000
+         initial-interval: 10000

@@ -9,8 +9,10 @@ app:
     
 # MySql #
 spring:
+  application:
+    name: ms-colombo-cael-student
   datasource:
-    url: jdbc:mysql://127.0.0.1:3306/paginaweb
+    url: jdbc:mysql://localhost:3306/paginaweb
     username: root
     password: 2812378
     driver-class-name: com.mysql.cj.jdbc.Driver

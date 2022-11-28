@@ -1,0 +1,16 @@
+server:
+  port: 8889
+  
+spring:
+  application:
+    name: ms-admin-registry-server
+
+eureka:
+  client:
+    register-with-eureka: false
+    fetch-registry: false
+    serviceUrl:
+      defaultZone: http://host.docker.internal:8889/eureka/
+  instance:
+    instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
+    prefer-ip-address: true

@@ -1,5 +1,9 @@
 server:
   port: 8889
+  
+spring:
+  application:
+    name: ms-admin-registry-server
 
 eureka:
    instance:

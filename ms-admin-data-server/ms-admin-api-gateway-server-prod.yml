@@ -1,0 +1,42 @@
+server: 
+  port: 8887
+
+# Registry Client
+eureka: 
+  client: 
+    fetch-registry: true
+    serviceUrl: 
+      defaultZone: "http://ms-admin-registry-server:8889/eureka"
+   
+# Matricula de Microservicios
+spring:
+  application:
+    name: ms-admin-api-gateway-server
+  cloud:
+    gateway:
+      discovery.locator:
+          enabled: true
+          lowerCaseServiceId: true
+      routes:
+      - id: ms-colombo-cael-assessment
+        uri: lb://ms-colombo-cael-assessment
+        predicates:
+        - Path=/api/**
+        filters: StripPrefix=1
+      - id: ms-colombo-cael-student
+        uri: lb://ms-colombo-cael-student
+        predicates:
+        - Path=/v1/customer/**
+        filters: StripPrefix=2
+
+# Activacion de endpoints
+management: 
+  endpoint: 
+    gateway: 
+      enabled: true
+    health: 
+      show-details: always
+  endpoints: 
+    web: 
+      exposure: 
+        include: "*"
