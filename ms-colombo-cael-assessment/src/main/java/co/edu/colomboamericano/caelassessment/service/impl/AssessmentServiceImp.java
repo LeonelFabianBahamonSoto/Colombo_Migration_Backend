@@ -499,7 +499,6 @@ public class AssessmentServiceImp implements AssessmentService
 
 	
 	public Object generateAssessmentAndQuestionsStepperForValidate(String answer,Integer id) throws Exception {
-		 Validation validation = new Validation();
 		boolean isCorrect = false;
 		  
 		List<Object> resultQuery = assessmentRepositoryCustom.getAssementForValidateQuestion(id);
@@ -519,14 +518,17 @@ public class AssessmentServiceImp implements AssessmentService
 		}
 		 
 		 Root root = this.getLastIndexAssessments(roots);
-			String resultTypeName =  this.questionUtilService.putFirsLetterInUppercase(root.getQuestionsGroup().get(questionStepper.getQuestionGroupIndex())
-					.getQuestionTypes().get(questionStepper.getQuestionTypeIndex()).getTypeName());
 			
-			Object result = validate(root,questionStepper,answer);
-		 return result;
+
+				boolean resultValidateQuestion = validateQuestion(root,questionStepper,answer);
+				updateScoreAndLostScore(resultValidateQuestion,roots,id);
+				setCurrentQuestionAsAnswered(roots,questionStepper,id);
+		
+			
+		 return resultValidateQuestion;
 	}
 	
-	public Object validate(Root root,QuestionStepper questionStepper,String answer) {
+	public Boolean validateQuestion(Root root,QuestionStepper questionStepper,String answer) {
 		
 		String resultTypeName =  this.questionUtilService.putFirsLetterInUppercase(root.getQuestionsGroup().get(questionStepper.getQuestionGroupIndex())
 				.getQuestionTypes().get(questionStepper.getQuestionTypeIndex()).getTypeName());
@@ -550,7 +552,6 @@ public class AssessmentServiceImp implements AssessmentService
 				isCorrect = answersBD.equals(requestQuestions.getAnswer());
 			}
 		 
-			System.out.println("typeName: "+resultTypeName);
 			
 		 if (SelectSingleAnswer.class.getSimpleName().equals(resultTypeName)) {
 			 if (answer.contains("[")) {
@@ -600,7 +601,7 @@ public class AssessmentServiceImp implements AssessmentService
 			 ArrayList<Answer> answersBD = (ArrayList<Answer>) root.getQuestionsGroup().get(questionStepper.getQuestionGroupIndex())
 						.getQuestionTypes().get(questionStepper.getQuestionTypeIndex()).getQuestions()
 						.get(questionStepper.getQuestionIndex()).getAnswers();
-		 
+			 
 			 	isCorrect = answersBD.stream().filter(a -> a.getAnswer().equals(requestQuestion.getAnswer())).findFirst().isPresent();
 		}
 		
@@ -631,5 +632,31 @@ public class AssessmentServiceImp implements AssessmentService
 		}
 		 
 		 return isCorrect;
+	}
+	
+	public void updateScoreAndLostScore(Boolean resultValidateQuestion,List<Root> roots, int id){
+		GenericQuestion genericQuestion = new GenericQuestion();
+		Validation validation = new Validation();
+
+		int lastIndex = roots.size() - 1;
+		Root root =  roots.get(lastIndex);
+		validation = genericQuestion.getValidation(true);
+		int resultScore = root.getScore() + validation.getScore();
+		int resulLostScore = root.getLostScore() + validation.getLostScore();
+		root.setScore(resultScore);
+		root.setLostScore(resulLostScore);
+		String resultJsonAssessments = new Gson().toJson(roots);
+		//this.assessmentRepository.updateAssessment(resultJsonAssessments,id);
+	}
+	
+	public void setCurrentQuestionAsAnswered(List<Root> roots,QuestionStepper questionStepper, int id) {
+		Root root = this.getLastIndexAssessments(roots);
+		Question question = new Question();
+		question = root.getQuestionsGroup().get(questionStepper.getQuestionGroupIndex())
+				.getQuestionTypes().get(questionStepper.getQuestionTypeIndex()).getQuestions()
+				.get(questionStepper.getQuestionIndex());
+		question.setAnswered(true);
+		String resultJsonAssessments = new Gson().toJson(roots);
+		//this.assessmentRepository.updateAssessment(resultJsonAssessments,id);
 	}
 }

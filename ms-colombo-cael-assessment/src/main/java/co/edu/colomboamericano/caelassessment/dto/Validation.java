@@ -5,6 +5,6 @@ import lombok.Data;
 @Data
 public class Validation {
 	 private boolean isCorrect;
-	 private Integer score;
-	 private Integer lostScore;
+	 private int score;
+	 private int lostScore;
 }
